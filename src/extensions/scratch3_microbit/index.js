@@ -22,7 +22,11 @@ const blockIconURI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYA
 const BLECommand = {
     CMD_PIN_CONFIG: 0x80,
     CMD_DISPLAY_TEXT: 0x81,
-    CMD_DISPLAY_LED: 0x82
+    CMD_DISPLAY_LED: 0x82,
+    CMD_PIN_INPUT: 0x90,
+    CMD_PIN_OUTPUT: 0x91,
+    CMD_PIN_PWM: 0x92,
+    CMD_PIN_SERVO: 0x93
 };
 
 
@@ -100,7 +104,11 @@ class MicroBit {
             buttonB: 0,
             touchPins: [0, 0, 0],
             gestureState: 0,
-            ledMatrixState: new Uint8Array(5)
+            ledMatrixState: new Uint8Array(5),
+            lightLevel: 0,
+            compassHeading: 0,
+            analogValue: [0, 0, 0],
+            slot: [0, 0, 0, 0]
         };
 
         /**
@@ -169,6 +177,40 @@ class MicroBit {
         return this.send(BLECommand.CMD_DISPLAY_LED, matrix);
     }
 
+    setPinInput (pinIndex) {
+        this.send(BLECommand.CMD_PIN_INPUT, new Uint8Array([pinIndex]));
+    }
+
+    setPinOutput (pinIndex, level) {
+        this.send(BLECommand.CMD_PIN_OUTPUT, new Uint8Array([pinIndex, level]));
+    }
+
+    setPinPWM (pinIndex, level) {
+        const dataView = new DataView(new ArrayBuffer(2));
+        dataView.setUint16(0, level, true);
+        this.send(BLECommand.CMD_PIN_PWM,
+            new Uint8Array([
+                pinIndex,
+                dataView.getUint8(0),
+                dataView.getUint8(1)]));
+    }
+
+    setPinServo (pinIndex, angle, range, center) {
+        if (!range || range < 0) range = 0;
+        if (!center || center < 0) center = 0;
+        const dataView = new DataView(new ArrayBuffer(4));
+        dataView.setUint16(0, range, true);
+        dataView.setUint16(2, center, true);
+        this.send(BLECommand.CMD_PIN_SERVO,
+            new Uint8Array([
+                pinIndex,
+                angle,
+                dataView.getUint8(0),
+                dataView.getUint8(1),
+                dataView.getUint8(2),
+                dataView.getUint8(3)]));
+    }
+
     /**
      * @return {number} - the latest value received for the tilt sensor's tilt about the X axis.
      */
@@ -209,6 +251,20 @@ class MicroBit {
      */
     get ledMatrixState () {
         return this._sensors.ledMatrixState;
+    }
+
+    /**
+     * @return {number} - the latest value received for the amount of light falling on the LEDs.
+     */
+    get lightLevel () {
+        return this._sensors.lightLevel;
+    }
+
+    /**
+     * @return {number} - the angle (degrees) of heading direction from the north.
+     */
+    get compassHeading () {
+        return this._sensors.compassHeading;
     }
 
     /**
@@ -328,6 +384,22 @@ class MicroBit {
 
         this._sensors.gestureState = data[9];
 
+        // More extension
+        const dataView = new DataView(data.buffer, 0);
+        if (data[19] === 0x01) {
+            this._sensors.analogValue[0] = dataView.getUint16(10, true);
+            this._sensors.analogValue[1] = dataView.getUint16(12, true);
+            this._sensors.analogValue[2] = dataView.getUint16(14, true);
+            this._sensors.compassHeading = dataView.getUint16(16, true);
+            this._sensors.lightLevel = dataView.getUint8(18);
+        }
+        if (data[19] === 0x02) {
+            this._sensors.slot[0] = dataView.getInt16(10, true);
+            this._sensors.slot[1] = dataView.getInt16(12, true);
+            this._sensors.slot[2] = dataView.getInt16(14, true);
+            this._sensors.slot[3] = dataView.getInt16(16, true);
+        }
+
         // cancel disconnect timeout and start a new one
         window.clearTimeout(this._timeoutID);
         this._timeoutID = window.setTimeout(
@@ -344,6 +416,25 @@ class MicroBit {
     _checkPinState (pin) {
         return this._sensors.touchPins[pin];
     }
+
+    /**
+     * Return the analog value of the pin.
+     * @param {number} pin - the pin to check.
+     * @return {number} - the latest value received for the analog pins.
+     */
+    getAnalogValue (pin) {
+        return this._sensors.analogValue[pin];
+    }
+
+    /**
+     * Return the value of the slot.
+     * @param {number} index - the slot index.
+     * @return {number} - the latest value received for the slot.
+     */
+    getSlotValue (index) {
+        return this._sensors.slot[index];
+    }
+
 }
 
 /**
@@ -743,6 +834,157 @@ class Scratch3MicroBitBlocks {
                             defaultValue: '0'
                         }
                     }
+                },
+                '---',
+                {
+                    opcode: 'isPinConnected',
+                    text: formatMessage({
+                        id: 'microbit.isPinConnected',
+                        default: '[PIN] pin connected?',
+                        description: 'is the selected pin connected to Earth/Ground?'
+                    }),
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'touchPins',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getLightLevel',
+                    text: formatMessage({
+                        id: 'microbit.lightLevel',
+                        default: 'light level',
+                        description: 'how much the amount of light falling on the LEDs on micro:bit'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getCompassHeading',
+                    text: formatMessage({
+                        id: 'microbit.compassHeading',
+                        default: 'compass heading',
+                        description: 'angle from the North to the micro:bit heading direction'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getAnalogValue',
+                    text: formatMessage({
+                        id: 'microbit.analogValue',
+                        default: 'analog in pin [PIN]',
+                        description: 'analog input value of the pin'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'touchPins',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getSlotValue',
+                    text: formatMessage({
+                        id: 'microbit.slogValue',
+                        default: 'slot [SLOT]',
+                        description: 'value of the slot'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        SLOT: {
+                            type: ArgumentType.STRING,
+                            menu: 'slot',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'setInput',
+                    text: formatMessage({
+                        id: 'microbit.setInput',
+                        default: 'set [GPIO_PIN] to Input',
+                        description: 'set pin to Input mode'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        GPIO_PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'setOutput',
+                    text: formatMessage({
+                        id: 'microbit.setOutput',
+                        default: 'set [GPIO_PIN] to Output [LEVEL]',
+                        description: 'set pin to Digtal Output mode and the level(0 or 1)'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        GPIO_PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        },
+                        LEVEL: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        }
+                    }
+                },
+                {
+                    opcode: 'setPWM',
+                    text: formatMessage({
+                        id: 'microbit.setPWM',
+                        default: 'set [GPIO_PIN] PWM [LEVEL]',
+                        description: 'set pin to PWM mode and the level(0 to 1023)'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        GPIO_PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        },
+                        LEVEL: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1023
+                        }
+                    }
+                },
+                {
+                    opcode: 'setServo',
+                    text: formatMessage({
+                        id: 'microbit.setServo',
+                        default: 'set [GPIO_PIN] Servo [ANGLE]',
+                        description: 'set pin to Servo mode and the angle(0 to 180)'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        GPIO_PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        },
+                        ANGLE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 180
+                        },
+                        RANGE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 2000
+                        },
+                        CENTER: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1500
+                        }
+                    }
                 }
             ],
             menus: {
@@ -751,7 +993,16 @@ class Scratch3MicroBitBlocks {
                 pinState: this.PIN_STATE_MENU,
                 tiltDirection: this.TILT_DIRECTION_MENU,
                 tiltDirectionAny: this.TILT_DIRECTION_ANY_MENU,
-                touchPins: ['0', '1', '2']
+                touchPins: ['0', '1', '2'],
+                slot: ['0', '1', '2', '3'],
+                gpio: [
+                    '0', '1', '2', '3',
+                    '4', '5', '6', '7',
+                    '8', '9', '10', '11',
+                    '12', '13', '14', '15',
+                    '16',
+                    '19', '20'
+                ]
             }
         };
     }
@@ -949,6 +1200,125 @@ class Scratch3MicroBitBlocks {
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 2) return false;
         return this._peripheral._checkPinState(pin);
+    }
+
+    // microbit_more
+
+    /**
+     * Test the selected pin is connected to the ground.
+     * @param {object} args - the block's arguments.
+     * @return {boolean} - true if the pin is connected.
+     */
+    isPinConnected (args) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return false;
+        return this._peripheral._checkPinState(pin);
+    }
+
+    /**
+     * Return amount of light on the LEDs.
+     * @return {number} - the level of light amount (0 - 255).
+     */
+    getLightLevel () {
+        return this._peripheral.lightLevel;
+    }
+
+    /**
+     * Return angle from the north to the micro:bit heading direction.
+     * @return {number} - the angle from the north (0 - 355 degrees).
+     */
+    getCompassHeading () {
+        return this._peripheral.compassHeading;
+    }
+
+    /**
+     * Return analog value of the pin.
+     * @param {object} args - the block's arguments.
+     * @return {number} - analog value of the pin.
+     */
+    getAnalogValue (args) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return 0;
+        if (pin < 0 || pin > 2) return 0;
+        return this._peripheral.getAnalogValue(pin);
+    }
+
+    /**
+     * Return value of the slot.
+     * @param {object} args - the block's arguments.
+     * @return {number} - analog value of the slot.
+     */
+    getSlotValue (args) {
+        const slot = parseInt(args.SLOT, 10);
+        if (isNaN(slot)) return 0;
+        if (slot < 0 || slot > 3) return 0;
+        return this._peripheral.getSlotValue(slot);
+    }
+
+    /**
+     * Set the pin to Input mode.
+     * @param {object} args - the block's arguments.
+     * @return {undefined}
+     */
+    setInput (args) {
+        const pin = parseInt(args.GPIO_PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        this._peripheral.setPinInput(pin);
+    }
+
+    /**
+     * Set the pin to Output mode and level.
+     * @param {object} args - the block's arguments.
+     * @return {undefined}
+     */
+    setOutput (args) {
+        const pin = parseInt(args.GPIO_PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        let level = parseInt(args.LEVEL, 10);
+        if (isNaN(level)) return;
+        level = Math.max(0, level);
+        level = Math.min(level, 1);
+        this._peripheral.setPinOutput(pin, level);
+    }
+
+    /**
+     * Set the pin to PWM mode and level.
+     * @param {object} args - the block's arguments.
+     * @return {undefined}
+     */
+    setPWM (args) {
+        const pin = parseInt(args.GPIO_PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        let level = parseInt(args.LEVEL, 10);
+        if (isNaN(level)) return;
+        level = Math.max(0, level);
+        level = Math.min(level, 1023);
+        this._peripheral.setPinPWM(pin, level);
+    }
+
+    /**
+     * Set the pin to Servo mode and angle.
+     * @param {object} args - the block's arguments.
+     * @return {undefined}
+     */
+    setServo (args) {
+        const pin = parseInt(args.GPIO_PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        let angle = parseInt(args.ANGLE, 10);
+        if (isNaN(angle)) return;
+        angle = Math.max(0, angle);
+        angle = Math.min(angle, 180);
+        // let range = parseInt(args.RANGE, 10);
+        // if (isNaN(range)) range = 0;
+        // range = Math.max(0, range);
+        // let center = parseInt(args.CENTER, 10);
+        // if (isNaN(center)) range = 0;
+        // center = Math.max(0, center);
+        this._peripheral.setPinServo(pin, angle, null, null);
     }
 }
 
