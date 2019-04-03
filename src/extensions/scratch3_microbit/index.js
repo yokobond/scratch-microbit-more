@@ -107,9 +107,24 @@ class MicroBit {
             ledMatrixState: new Uint8Array(5),
             lightLevel: 0,
             compassHeading: 0,
-            analogValue: [0, 0, 0],
+            analogValue: {},
+            digitalValue: {},
             slot: [0, 0, 0, 0]
         };
+
+        this.analogIn = [0, 1, 2];
+        this.analogIn.forEach(pinIndex => {
+            this._sensors.analogValue[pinIndex] = 0;
+        });
+        this.gpio = [
+            0, 1, 2,
+            8,
+            13, 14, 15, 16
+        ];
+        this.gpio.forEach(pinIndex => {
+            this._sensors.digitalValue[pinIndex] = 0;
+        });
+        this.slotLength = this._sensors.slot.length;
 
         /**
          * The most recently received value for each gesture.
@@ -387,9 +402,9 @@ class MicroBit {
         // More extension
         const dataView = new DataView(data.buffer, 0);
         if (data[19] === 0x01) {
-            this._sensors.analogValue[0] = dataView.getUint16(10, true);
-            this._sensors.analogValue[1] = dataView.getUint16(12, true);
-            this._sensors.analogValue[2] = dataView.getUint16(14, true);
+            this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(10, true);
+            this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(12, true);
+            this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(14, true);
             this._sensors.compassHeading = dataView.getUint16(16, true);
             this._sensors.lightLevel = dataView.getUint8(18);
         }
@@ -398,6 +413,10 @@ class MicroBit {
             this._sensors.slot[1] = dataView.getInt16(12, true);
             this._sensors.slot[2] = dataView.getInt16(14, true);
             this._sensors.slot[3] = dataView.getInt16(16, true);
+            const gpioData = dataView.getUint8(18);
+            for (let i = 0; i < this.gpio.length; i++) {
+                this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
+            }
         }
 
         // cancel disconnect timeout and start a new one
@@ -414,6 +433,9 @@ class MicroBit {
      * @private
      */
     _checkPinState (pin) {
+        if (pin > 2) {
+            return this._sensors.digitalValue[pin];
+        }
         return this._sensors.touchPins[pin];
     }
 
@@ -645,6 +667,18 @@ class Scratch3MicroBitBlocks {
         ];
     }
 
+    get SLOT_MENU () {
+        const menu = [];
+        for (let i = 0; i < this._peripheral.slotLength; i++) {
+            menu.push(i.toString());
+        }
+        return menu;
+    }
+
+    get GPIO_MENU () {
+        return this._peripheral.gpio.map(pinIndex => pinIndex.toString());
+    }
+
     /**
      * Construct a set of MicroBit blocks.
      * @param {Runtime} runtime - the Scratch 3.0 runtime.
@@ -830,7 +864,7 @@ class Scratch3MicroBitBlocks {
                     arguments: {
                         PIN: {
                             type: ArgumentType.STRING,
-                            menu: 'touchPins',
+                            menu: 'gpio',
                             defaultValue: '0'
                         }
                     }
@@ -847,7 +881,7 @@ class Scratch3MicroBitBlocks {
                     arguments: {
                         PIN: {
                             type: ArgumentType.STRING,
-                            menu: 'touchPins',
+                            menu: 'gpio',
                             defaultValue: '0'
                         }
                     }
@@ -906,12 +940,12 @@ class Scratch3MicroBitBlocks {
                     opcode: 'setInput',
                     text: formatMessage({
                         id: 'microbit.setInput',
-                        default: 'set [GPIO_PIN] to Input',
+                        default: 'set [PIN] to Input',
                         description: 'set pin to Input mode'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
-                        GPIO_PIN: {
+                        PIN: {
                             type: ArgumentType.STRING,
                             menu: 'gpio',
                             defaultValue: '0'
@@ -922,12 +956,12 @@ class Scratch3MicroBitBlocks {
                     opcode: 'setOutput',
                     text: formatMessage({
                         id: 'microbit.setOutput',
-                        default: 'set [GPIO_PIN] to Output [LEVEL]',
+                        default: 'set [PIN] to Output [LEVEL]',
                         description: 'set pin to Digtal Output mode and the level(0 or 1)'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
-                        GPIO_PIN: {
+                        PIN: {
                             type: ArgumentType.STRING,
                             menu: 'gpio',
                             defaultValue: '0'
@@ -942,12 +976,12 @@ class Scratch3MicroBitBlocks {
                     opcode: 'setPWM',
                     text: formatMessage({
                         id: 'microbit.setPWM',
-                        default: 'set [GPIO_PIN] PWM [LEVEL]',
+                        default: 'set [PIN] PWM [LEVEL]',
                         description: 'set pin to PWM mode and the level(0 to 1023)'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
-                        GPIO_PIN: {
+                        PIN: {
                             type: ArgumentType.STRING,
                             menu: 'gpio',
                             defaultValue: '0'
@@ -962,12 +996,12 @@ class Scratch3MicroBitBlocks {
                     opcode: 'setServo',
                     text: formatMessage({
                         id: 'microbit.setServo',
-                        default: 'set [GPIO_PIN] Servo [ANGLE]',
+                        default: 'set [PIN] Servo [ANGLE]',
                         description: 'set pin to Servo mode and the angle(0 to 180)'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
-                        GPIO_PIN: {
+                        PIN: {
                             type: ArgumentType.STRING,
                             menu: 'gpio',
                             defaultValue: '0'
@@ -994,15 +1028,8 @@ class Scratch3MicroBitBlocks {
                 tiltDirection: this.TILT_DIRECTION_MENU,
                 tiltDirectionAny: this.TILT_DIRECTION_ANY_MENU,
                 touchPins: ['0', '1', '2'],
-                slot: ['0', '1', '2', '3'],
-                gpio: [
-                    '0', '1', '2', '3',
-                    '4', '5', '6', '7',
-                    '8', '9', '10', '11',
-                    '12', '13', '14', '15',
-                    '16',
-                    '19', '20'
-                ]
+                slot: this.SLOT_MENU,
+                gpio: this.GPIO_MENU
             }
         };
     }
@@ -1198,7 +1225,7 @@ class Scratch3MicroBitBlocks {
     whenPinConnected (args) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
-        if (pin < 0 || pin > 2) return false;
+        if (!this.GPIO_MENU.includes(pin.toString())) return false;
         return this._peripheral._checkPinState(pin);
     }
 
@@ -1212,6 +1239,7 @@ class Scratch3MicroBitBlocks {
     isPinConnected (args) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return false;
+        if (!this.GPIO_MENU.includes(pin.toString())) return false;
         return this._peripheral._checkPinState(pin);
     }
 
@@ -1251,7 +1279,7 @@ class Scratch3MicroBitBlocks {
     getSlotValue (args) {
         const slot = parseInt(args.SLOT, 10);
         if (isNaN(slot)) return 0;
-        if (slot < 0 || slot > 3) return 0;
+        if (!this.SLOT_MENU.includes(slot.toString())) return 0;
         return this._peripheral.getSlotValue(slot);
     }
 
@@ -1261,7 +1289,7 @@ class Scratch3MicroBitBlocks {
      * @return {undefined}
      */
     setInput (args) {
-        const pin = parseInt(args.GPIO_PIN, 10);
+        const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
         this._peripheral.setPinInput(pin);
@@ -1273,7 +1301,7 @@ class Scratch3MicroBitBlocks {
      * @return {undefined}
      */
     setOutput (args) {
-        const pin = parseInt(args.GPIO_PIN, 10);
+        const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
         let level = parseInt(args.LEVEL, 10);
@@ -1289,7 +1317,7 @@ class Scratch3MicroBitBlocks {
      * @return {undefined}
      */
     setPWM (args) {
-        const pin = parseInt(args.GPIO_PIN, 10);
+        const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
         let level = parseInt(args.LEVEL, 10);
@@ -1305,7 +1333,7 @@ class Scratch3MicroBitBlocks {
      * @return {undefined}
      */
     setServo (args) {
-        const pin = parseInt(args.GPIO_PIN, 10);
+        const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
         let angle = parseInt(args.ANGLE, 10);
