@@ -940,7 +940,7 @@ class Scratch3MicroBitBlocks {
                     opcode: 'setInput',
                     text: formatMessage({
                         id: 'microbit.setInput',
-                        default: 'set [PIN] to Input',
+                        default: 'set [PIN] Input',
                         description: 'set pin to Input mode'
                     }),
                     blockType: BlockType.COMMAND,
@@ -956,7 +956,7 @@ class Scratch3MicroBitBlocks {
                     opcode: 'setOutput',
                     text: formatMessage({
                         id: 'microbit.setOutput',
-                        default: 'set [PIN] to Output [LEVEL]',
+                        default: 'set [PIN] Digital [LEVEL]',
                         description: 'set pin to Digtal Output mode and the level(0 or 1)'
                     }),
                     blockType: BlockType.COMMAND,
