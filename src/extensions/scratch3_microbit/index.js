@@ -667,6 +667,10 @@ class Scratch3MicroBitBlocks {
         ];
     }
 
+    get ANALOG_IN_MENU () {
+        return this._peripheral.analogIn.map(pinIndex => pinIndex.toString());
+    }
+
     get SLOT_MENU () {
         const menu = [];
         for (let i = 0; i < this._peripheral.slotLength; i++) {
@@ -915,7 +919,7 @@ class Scratch3MicroBitBlocks {
                     arguments: {
                         PIN: {
                             type: ArgumentType.STRING,
-                            menu: 'touchPins',
+                            menu: 'analogIn',
                             defaultValue: '0'
                         }
                     }
@@ -1027,7 +1031,7 @@ class Scratch3MicroBitBlocks {
                 pinState: this.PIN_STATE_MENU,
                 tiltDirection: this.TILT_DIRECTION_MENU,
                 tiltDirectionAny: this.TILT_DIRECTION_ANY_MENU,
-                touchPins: ['0', '1', '2'],
+                analogIn: this.ANALOG_IN_MENU,
                 slot: this.SLOT_MENU,
                 gpio: this.GPIO_MENU
             }
