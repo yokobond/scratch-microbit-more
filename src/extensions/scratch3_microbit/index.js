@@ -192,25 +192,26 @@ class MicroBit {
         return this.send(BLECommand.CMD_DISPLAY_LED, matrix);
     }
 
-    setPinInput (pinIndex) {
-        this.send(BLECommand.CMD_PIN_INPUT, new Uint8Array([pinIndex]));
+    setPinInput (pinIndex, util) {
+        this.send(BLECommand.CMD_PIN_INPUT, new Uint8Array([pinIndex]), util);
     }
 
-    setPinOutput (pinIndex, level) {
-        this.send(BLECommand.CMD_PIN_OUTPUT, new Uint8Array([pinIndex, level]));
+    setPinOutput (pinIndex, level, util) {
+        this.send(BLECommand.CMD_PIN_OUTPUT, new Uint8Array([pinIndex, level]), util);
     }
 
-    setPinPWM (pinIndex, level) {
+    setPinPWM (pinIndex, level, util) {
         const dataView = new DataView(new ArrayBuffer(2));
         dataView.setUint16(0, level, true);
         this.send(BLECommand.CMD_PIN_PWM,
             new Uint8Array([
                 pinIndex,
                 dataView.getUint8(0),
-                dataView.getUint8(1)]));
+                dataView.getUint8(1)]),
+            util);
     }
 
-    setPinServo (pinIndex, angle, range, center) {
+    setPinServo (pinIndex, angle, range, center, util) {
         if (!range || range < 0) range = 0;
         if (!center || center < 0) center = 0;
         const dataView = new DataView(new ArrayBuffer(4));
@@ -223,7 +224,8 @@ class MicroBit {
                 dataView.getUint8(0),
                 dataView.getUint8(1),
                 dataView.getUint8(2),
-                dataView.getUint8(3)]));
+                dataView.getUint8(3)]),
+            util);
     }
 
     /**
@@ -332,10 +334,14 @@ class MicroBit {
      * Send a message to the peripheral BLE socket.
      * @param {number} command - the BLE command hex.
      * @param {Uint8Array} message - the message to write
+     * @param {object} util - utility object provided by the runtime.
      */
-    send (command, message) {
+    send (command, message, util) {
         if (!this.isConnected()) return;
-        if (this._busy) return;
+        if (this._busy) {
+            if (util) util.yield();
+            return;
+        }
 
         // Set a busy flag so that while we are sending a message and waiting for
         // the response, additional messages are ignored.
@@ -1290,21 +1296,23 @@ class Scratch3MicroBitBlocks {
     /**
      * Set the pin to Input mode.
      * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
      * @return {undefined}
      */
-    setInput (args) {
+    setInput (args, util) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
-        this._peripheral.setPinInput(pin);
+        this._peripheral.setPinInput(pin, util);
     }
 
     /**
      * Set the pin to Output mode and level.
      * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
      * @return {undefined}
      */
-    setOutput (args) {
+    setOutput (args, util) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
@@ -1312,15 +1320,16 @@ class Scratch3MicroBitBlocks {
         if (isNaN(level)) return;
         level = Math.max(0, level);
         level = Math.min(level, 1);
-        this._peripheral.setPinOutput(pin, level);
+        this._peripheral.setPinOutput(pin, level, util);
     }
 
     /**
      * Set the pin to PWM mode and level.
      * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
      * @return {undefined}
      */
-    setPWM (args) {
+    setPWM (args, util) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
@@ -1328,15 +1337,16 @@ class Scratch3MicroBitBlocks {
         if (isNaN(level)) return;
         level = Math.max(0, level);
         level = Math.min(level, 1023);
-        this._peripheral.setPinPWM(pin, level);
+        this._peripheral.setPinPWM(pin, level, util);
     }
 
     /**
      * Set the pin to Servo mode and angle.
      * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
      * @return {undefined}
      */
-    setServo (args) {
+    setServo (args, util) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
@@ -1350,7 +1360,7 @@ class Scratch3MicroBitBlocks {
         // let center = parseInt(args.CENTER, 10);
         // if (isNaN(center)) range = 0;
         // center = Math.max(0, center);
-        this._peripheral.setPinServo(pin, angle, null, null);
+        this._peripheral.setPinServo(pin, angle, null, null, util);
     }
 }
 
