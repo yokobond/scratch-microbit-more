@@ -11,7 +11,7 @@ const Base64Util = require('../../util/base64-util');
  * @type {string}
  */
 // eslint-disable-next-line max-len
-const blockIconURI = 'data:image/png;base64,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';
+const blockIconURI = 'data:image/png;base64,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';
 
 /**
  * Enum for micro:bit BLE command protocol.
@@ -22,7 +22,11 @@ const blockIconURI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYA
 const BLECommand = {
     CMD_PIN_CONFIG: 0x80,
     CMD_DISPLAY_TEXT: 0x81,
-    CMD_DISPLAY_LED: 0x82
+    CMD_DISPLAY_LED: 0x82,
+    CMD_PIN_INPUT: 0x90,
+    CMD_PIN_OUTPUT: 0x91,
+    CMD_PIN_PWM: 0x92,
+    CMD_PIN_SERVO: 0x93
 };
 
 
@@ -42,7 +46,7 @@ const BLESendInterval = 100;
  * A string to report to the BLE socket when the micro:bit has stopped receiving data.
  * @type {string}
  */
-const BLEDataStoppedError = 'micro:bit extension stopped receiving data';
+const BLEDataStoppedError = 'micro:bit More extension stopped receiving data';
 
 /**
  * Enum for micro:bit protocol.
@@ -100,8 +104,27 @@ class MicroBit {
             buttonB: 0,
             touchPins: [0, 0, 0],
             gestureState: 0,
-            ledMatrixState: new Uint8Array(5)
+            ledMatrixState: new Uint8Array(5),
+            lightLevel: 0,
+            compassHeading: 0,
+            analogValue: {},
+            digitalValue: {},
+            slot: [0, 0, 0, 0]
         };
+
+        this.analogIn = [0, 1, 2];
+        this.analogIn.forEach(pinIndex => {
+            this._sensors.analogValue[pinIndex] = 0;
+        });
+        this.gpio = [
+            0, 1, 2,
+            8,
+            13, 14, 15, 16
+        ];
+        this.gpio.forEach(pinIndex => {
+            this._sensors.digitalValue[pinIndex] = 0;
+        });
+        this.slotLength = this._sensors.slot.length;
 
         /**
          * The most recently received value for each gesture.
@@ -169,6 +192,42 @@ class MicroBit {
         return this.send(BLECommand.CMD_DISPLAY_LED, matrix);
     }
 
+    setPinInput (pinIndex, util) {
+        this.send(BLECommand.CMD_PIN_INPUT, new Uint8Array([pinIndex]), util);
+    }
+
+    setPinOutput (pinIndex, level, util) {
+        this.send(BLECommand.CMD_PIN_OUTPUT, new Uint8Array([pinIndex, level]), util);
+    }
+
+    setPinPWM (pinIndex, level, util) {
+        const dataView = new DataView(new ArrayBuffer(2));
+        dataView.setUint16(0, level, true);
+        this.send(BLECommand.CMD_PIN_PWM,
+            new Uint8Array([
+                pinIndex,
+                dataView.getUint8(0),
+                dataView.getUint8(1)]),
+            util);
+    }
+
+    setPinServo (pinIndex, angle, range, center, util) {
+        if (!range || range < 0) range = 0;
+        if (!center || center < 0) center = 0;
+        const dataView = new DataView(new ArrayBuffer(4));
+        dataView.setUint16(0, range, true);
+        dataView.setUint16(2, center, true);
+        this.send(BLECommand.CMD_PIN_SERVO,
+            new Uint8Array([
+                pinIndex,
+                angle,
+                dataView.getUint8(0),
+                dataView.getUint8(1),
+                dataView.getUint8(2),
+                dataView.getUint8(3)]),
+            util);
+    }
+
     /**
      * @return {number} - the latest value received for the tilt sensor's tilt about the X axis.
      */
@@ -209,6 +268,20 @@ class MicroBit {
      */
     get ledMatrixState () {
         return this._sensors.ledMatrixState;
+    }
+
+    /**
+     * @return {number} - the latest value received for the amount of light falling on the LEDs.
+     */
+    get lightLevel () {
+        return this._sensors.lightLevel;
+    }
+
+    /**
+     * @return {number} - the angle (degrees) of heading direction from the north.
+     */
+    get compassHeading () {
+        return this._sensors.compassHeading;
     }
 
     /**
@@ -261,10 +334,14 @@ class MicroBit {
      * Send a message to the peripheral BLE socket.
      * @param {number} command - the BLE command hex.
      * @param {Uint8Array} message - the message to write
+     * @param {object} util - utility object provided by the runtime.
      */
-    send (command, message) {
+    send (command, message, util) {
         if (!this.isConnected()) return;
-        if (this._busy) return;
+        if (this._busy) {
+            if (util) util.yield();
+            return;
+        }
 
         // Set a busy flag so that while we are sending a message and waiting for
         // the response, additional messages are ignored.
@@ -328,6 +405,26 @@ class MicroBit {
 
         this._sensors.gestureState = data[9];
 
+        // More extension
+        const dataView = new DataView(data.buffer, 0);
+        if (data[19] === 0x01) {
+            this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(10, true);
+            this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(12, true);
+            this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(14, true);
+            this._sensors.compassHeading = dataView.getUint16(16, true);
+            this._sensors.lightLevel = dataView.getUint8(18);
+        }
+        if (data[19] === 0x02) {
+            this._sensors.slot[0] = dataView.getInt16(10, true);
+            this._sensors.slot[1] = dataView.getInt16(12, true);
+            this._sensors.slot[2] = dataView.getInt16(14, true);
+            this._sensors.slot[3] = dataView.getInt16(16, true);
+            const gpioData = dataView.getUint8(18);
+            for (let i = 0; i < this.gpio.length; i++) {
+                this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
+            }
+        }
+
         // cancel disconnect timeout and start a new one
         window.clearTimeout(this._timeoutID);
         this._timeoutID = window.setTimeout(
@@ -342,8 +439,30 @@ class MicroBit {
      * @private
      */
     _checkPinState (pin) {
+        if (pin > 2) {
+            return this._sensors.digitalValue[pin];
+        }
         return this._sensors.touchPins[pin];
     }
+
+    /**
+     * Return the analog value of the pin.
+     * @param {number} pin - the pin to check.
+     * @return {number} - the latest value received for the analog pins.
+     */
+    getAnalogValue (pin) {
+        return this._sensors.analogValue[pin];
+    }
+
+    /**
+     * Return the value of the slot.
+     * @param {number} index - the slot index.
+     * @return {number} - the latest value received for the slot.
+     */
+    getSlotValue (index) {
+        return this._sensors.slot[index];
+    }
+
 }
 
 /**
@@ -400,14 +519,14 @@ class Scratch3MicroBitBlocks {
      * @return {string} - the name of this extension.
      */
     static get EXTENSION_NAME () {
-        return 'micro:bit';
+        return 'micro:bit more';
     }
 
     /**
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID () {
-        return 'microbit';
+        return 'microbitMore';
     }
 
     /**
@@ -552,6 +671,22 @@ class Scratch3MicroBitBlocks {
                 value: MicroBitTiltDirection.ANY
             }
         ];
+    }
+
+    get ANALOG_IN_MENU () {
+        return this._peripheral.analogIn.map(pinIndex => pinIndex.toString());
+    }
+
+    get SLOT_MENU () {
+        const menu = [];
+        for (let i = 0; i < this._peripheral.slotLength; i++) {
+            menu.push(i.toString());
+        }
+        return menu;
+    }
+
+    get GPIO_MENU () {
+        return this._peripheral.gpio.map(pinIndex => pinIndex.toString());
     }
 
     /**
@@ -739,8 +874,159 @@ class Scratch3MicroBitBlocks {
                     arguments: {
                         PIN: {
                             type: ArgumentType.STRING,
-                            menu: 'touchPins',
+                            menu: 'gpio',
                             defaultValue: '0'
+                        }
+                    }
+                },
+                '---',
+                {
+                    opcode: 'isPinConnected',
+                    text: formatMessage({
+                        id: 'microbit.isPinConnected',
+                        default: '[PIN] pin connected?',
+                        description: 'is the selected pin connected to Earth/Ground?'
+                    }),
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getLightLevel',
+                    text: formatMessage({
+                        id: 'microbit.lightLevel',
+                        default: 'light level',
+                        description: 'how much the amount of light falling on the LEDs on micro:bit'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getCompassHeading',
+                    text: formatMessage({
+                        id: 'microbit.compassHeading',
+                        default: 'compass heading',
+                        description: 'angle from the North to the micro:bit heading direction'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getAnalogValue',
+                    text: formatMessage({
+                        id: 'microbit.analogValue',
+                        default: 'analog in pin [PIN]',
+                        description: 'analog input value of the pin'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'analogIn',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getSlotValue',
+                    text: formatMessage({
+                        id: 'microbit.slogValue',
+                        default: 'slot [SLOT]',
+                        description: 'value of the slot'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        SLOT: {
+                            type: ArgumentType.STRING,
+                            menu: 'slot',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'setInput',
+                    text: formatMessage({
+                        id: 'microbit.setInput',
+                        default: 'set [PIN] Input',
+                        description: 'set pin to Input mode'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'setOutput',
+                    text: formatMessage({
+                        id: 'microbit.setOutput',
+                        default: 'set [PIN] Digital [LEVEL]',
+                        description: 'set pin to Digtal Output mode and the level(0 or 1)'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        },
+                        LEVEL: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
+                        }
+                    }
+                },
+                {
+                    opcode: 'setPWM',
+                    text: formatMessage({
+                        id: 'microbit.setPWM',
+                        default: 'set [PIN] PWM [LEVEL]',
+                        description: 'set pin to PWM mode and the level(0 to 1023)'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        },
+                        LEVEL: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1023
+                        }
+                    }
+                },
+                {
+                    opcode: 'setServo',
+                    text: formatMessage({
+                        id: 'microbit.setServo',
+                        default: 'set [PIN] Servo [ANGLE]',
+                        description: 'set pin to Servo mode and the angle(0 to 180)'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        },
+                        ANGLE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 180
+                        },
+                        RANGE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 2000
+                        },
+                        CENTER: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 1500
                         }
                     }
                 }
@@ -751,7 +1037,9 @@ class Scratch3MicroBitBlocks {
                 pinState: this.PIN_STATE_MENU,
                 tiltDirection: this.TILT_DIRECTION_MENU,
                 tiltDirectionAny: this.TILT_DIRECTION_ANY_MENU,
-                touchPins: ['0', '1', '2']
+                analogIn: this.ANALOG_IN_MENU,
+                slot: this.SLOT_MENU,
+                gpio: this.GPIO_MENU
             }
         };
     }
@@ -947,8 +1235,132 @@ class Scratch3MicroBitBlocks {
     whenPinConnected (args) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
-        if (pin < 0 || pin > 2) return false;
+        if (!this.GPIO_MENU.includes(pin.toString())) return false;
         return this._peripheral._checkPinState(pin);
+    }
+
+    // microbit_more
+
+    /**
+     * Test the selected pin is connected to the ground.
+     * @param {object} args - the block's arguments.
+     * @return {boolean} - true if the pin is connected.
+     */
+    isPinConnected (args) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return false;
+        if (!this.GPIO_MENU.includes(pin.toString())) return false;
+        return this._peripheral._checkPinState(pin);
+    }
+
+    /**
+     * Return amount of light on the LEDs.
+     * @return {number} - the level of light amount (0 - 255).
+     */
+    getLightLevel () {
+        return this._peripheral.lightLevel;
+    }
+
+    /**
+     * Return angle from the north to the micro:bit heading direction.
+     * @return {number} - the angle from the north (0 - 355 degrees).
+     */
+    getCompassHeading () {
+        return this._peripheral.compassHeading;
+    }
+
+    /**
+     * Return analog value of the pin.
+     * @param {object} args - the block's arguments.
+     * @return {number} - analog value of the pin.
+     */
+    getAnalogValue (args) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return 0;
+        if (pin < 0 || pin > 2) return 0;
+        return this._peripheral.getAnalogValue(pin);
+    }
+
+    /**
+     * Return value of the slot.
+     * @param {object} args - the block's arguments.
+     * @return {number} - analog value of the slot.
+     */
+    getSlotValue (args) {
+        const slot = parseInt(args.SLOT, 10);
+        if (isNaN(slot)) return 0;
+        if (!this.SLOT_MENU.includes(slot.toString())) return 0;
+        return this._peripheral.getSlotValue(slot);
+    }
+
+    /**
+     * Set the pin to Input mode.
+     * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
+     * @return {undefined}
+     */
+    setInput (args, util) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        this._peripheral.setPinInput(pin, util);
+    }
+
+    /**
+     * Set the pin to Output mode and level.
+     * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
+     * @return {undefined}
+     */
+    setOutput (args, util) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        let level = parseInt(args.LEVEL, 10);
+        if (isNaN(level)) return;
+        level = Math.max(0, level);
+        level = Math.min(level, 1);
+        this._peripheral.setPinOutput(pin, level, util);
+    }
+
+    /**
+     * Set the pin to PWM mode and level.
+     * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
+     * @return {undefined}
+     */
+    setPWM (args, util) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        let level = parseInt(args.LEVEL, 10);
+        if (isNaN(level)) return;
+        level = Math.max(0, level);
+        level = Math.min(level, 1023);
+        this._peripheral.setPinPWM(pin, level, util);
+    }
+
+    /**
+     * Set the pin to Servo mode and angle.
+     * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
+     * @return {undefined}
+     */
+    setServo (args, util) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        let angle = parseInt(args.ANGLE, 10);
+        if (isNaN(angle)) return;
+        angle = Math.max(0, angle);
+        angle = Math.min(angle, 180);
+        // let range = parseInt(args.RANGE, 10);
+        // if (isNaN(range)) range = 0;
+        // range = Math.max(0, range);
+        // let center = parseInt(args.CENTER, 10);
+        // if (isNaN(center)) range = 0;
+        // center = Math.max(0, center);
+        this._peripheral.setPinServo(pin, angle, null, null, util);
     }
 }
 
