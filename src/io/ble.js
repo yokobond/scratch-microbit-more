@@ -14,7 +14,7 @@ class BLE extends JSONRPCWebSocket {
      * @param {object} disconnectCallback - a callback for disconnection.
      */
     constructor (runtime, extensionId, peripheralOptions, connectCallback, disconnectCallback = null) {
-        const ws = new WebSocket(ScratchLinkWebSocket);
+        const ws = new WebSocket(window.deviceManagerPort ? `wss://${window.deviceManagerPort}/scratch/ble` : ScratchLinkWebSocket);
         super(ws);
 
         this._ws = ws;
@@ -80,7 +80,7 @@ class BLE extends JSONRPCWebSocket {
         if (this._connected) {
             this._connected = false;
         }
-        
+
         if (this._discoverTimeoutID) {
             window.clearTimeout(this._discoverTimeoutID);
         }

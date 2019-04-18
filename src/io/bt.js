@@ -15,7 +15,7 @@ class BT extends JSONRPCWebSocket {
      * @param {object} messageCallback - a callback for message sending.
      */
     constructor (runtime, extensionId, peripheralOptions, connectCallback, disconnectCallback = null, messageCallback) {
-        const ws = new WebSocket(ScratchLinkWebSocket);
+        const ws = new WebSocket(window.deviceManagerPort ? `wss://${window.deviceManagerPort}/scratch/bt` : ScratchLinkWebSocket);
         super(ws);
 
         this._ws = ws;
