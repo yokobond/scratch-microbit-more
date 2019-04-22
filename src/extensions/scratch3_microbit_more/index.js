@@ -1025,7 +1025,7 @@ class Scratch3MicroBitBlocks {
                         },
                         LEVEL: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 1023
+                            defaultValue: 0
                         }
                     }
                 },
@@ -1045,7 +1045,7 @@ class Scratch3MicroBitBlocks {
                         },
                         ANGLE: {
                             type: ArgumentType.NUMBER,
-                            defaultValue: 180
+                            defaultValue: 0
                         },
                         RANGE: {
                             type: ArgumentType.NUMBER,
