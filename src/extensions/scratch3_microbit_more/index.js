@@ -510,6 +510,11 @@ const MicroBitPinState = {
     OFF: 'off'
 };
 
+const DigitalValue = {
+    LOW: '0',
+    HIGH: '1'
+};
+
 /**
  * Scratch 3.0 blocks to interact with a MicroBit peripheral.
  */
@@ -688,6 +693,27 @@ class Scratch3MicroBitBlocks {
     get GPIO_MENU () {
         return this._peripheral.gpio.map(pinIndex => pinIndex.toString());
     }
+
+    get DIGITAL_VALUE_MENU () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'microbit.digitalValueMenu.Low',
+                    default: 'Low',
+                    description: 'label for low value in digital output menu for microbit more extension'
+                }),
+                value: DigitalValue.LOW
+            },
+            {
+                text: formatMessage({
+                    id: 'microbit.digitalValueMenu.High',
+                    default: 'High',
+                    description: 'label for high value in digital output menu for microbit more extension'
+                }),
+                value: DigitalValue.HIGH}
+        ];
+    }
+
 
     /**
      * Construct a set of MicroBit blocks.
@@ -977,8 +1003,9 @@ class Scratch3MicroBitBlocks {
                             defaultValue: '0'
                         },
                         LEVEL: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
+                            type: ArgumentType.STRING,
+                            menu: 'digitalValue',
+                            defaultValue: DigitalValue.LOW
                         }
                     }
                 },
@@ -1038,6 +1065,7 @@ class Scratch3MicroBitBlocks {
                 tiltDirection: this.TILT_DIRECTION_MENU,
                 tiltDirectionAny: this.TILT_DIRECTION_ANY_MENU,
                 analogIn: this.ANALOG_IN_MENU,
+                digitalValue: this.DIGITAL_VALUE_MENU,
                 slot: this.SLOT_MENU,
                 gpio: this.GPIO_MENU
             }
