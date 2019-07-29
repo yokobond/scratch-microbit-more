@@ -61,6 +61,12 @@ const BLEUUID = {
 };
 
 /**
+ * The unit-value of the gravitational acceleration from Micro:bit.
+ * @type {number}
+ */
+const G = 1024;
+
+/**
  * Manage communication with a MicroBit peripheral over a Scrath Link client socket.
  */
 class MicroBit {
@@ -285,6 +291,34 @@ class MicroBit {
     }
 
     /**
+     * @return {number} - the value of magnetic field strength [nano tesla].
+     */
+    get magneticStrength () {
+        return this._sensors.magneticStrength;
+    }
+
+    /**
+     * @return {number} - the value of gravitational acceleration [milli-g] for the X axis.
+     */
+    get accelerationX () {
+        return 1000 * this._sensors.accelerationX / G;
+    }
+
+    /**
+     * @return {number} - the value of acceleration [milli-g] for the Y axis.
+     */
+    get accelerationY () {
+        return 1000 * this._sensors.accelerationY / G;
+    }
+
+    /**
+     * @return {number} - the value of acceleration [milli-g] for the Z axis.
+     */
+    get accelerationZ () {
+        return 1000 * this._sensors.accelerationZ / G;
+    }
+
+    /**
      * Called by the runtime when user wants to scan for a peripheral.
      */
     scan () {
@@ -424,6 +458,12 @@ class MicroBit {
                 this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
             }
         }
+        if (data[19] === 0x03) {
+            this._sensors.magneticStrength = dataView.getUint16(10, true);
+            this._sensors.accelerationX = dataView.getInt16(12, true);
+            this._sensors.accelerationY = dataView.getInt16(14, true);
+            this._sensors.accelerationZ = dataView.getInt16(16, true);
+        }
 
         // cancel disconnect timeout and start a new one
         window.clearTimeout(this._timeoutID);
@@ -513,6 +553,18 @@ const MicroBitPinState = {
 const DigitalValue = {
     LOW: '0',
     HIGH: '1'
+};
+
+
+/**
+ * Enum for axis menu options.
+ * @readonly
+ * @enum {string}
+ */
+const AxisValues = {
+    X: 'x',
+    Y: 'y',
+    Z: 'z'
 };
 
 /**
@@ -711,6 +763,23 @@ class Scratch3MicroBitBlocks {
                     description: 'label for high value in digital output menu for microbit more extension'
                 }),
                 value: DigitalValue.HIGH}
+        ];
+    }
+
+    get AXIS_MENU () {
+        return [
+            {
+                text: 'x',
+                value: AxisValues.X
+            },
+            {
+                text: 'y',
+                value: AxisValues.Y
+            },
+            {
+                text: 'z',
+                value: AxisValues.Z
+            }
         ];
     }
 
@@ -941,6 +1010,31 @@ class Scratch3MicroBitBlocks {
                     blockType: BlockType.REPORTER
                 },
                 {
+                    opcode: 'getMagneticStrength',
+                    text: formatMessage({
+                        id: 'microbit.magneticStrength',
+                        default: 'magnetic strength',
+                        description: 'value of magnetic field strength (nano tesla)'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getAcceleration',
+                    text: formatMessage({
+                        id: 'microbit.acceleration',
+                        default: 'acceleration [AXIS]',
+                        description: 'value of acceleration on the axis (milli-g)'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        AXIS: {
+                            type: ArgumentType.STRING,
+                            menu: 'axis',
+                            defaultValue: AxisValues.X
+                        }
+                    }
+                },
+                {
                     opcode: 'getAnalogValue',
                     text: formatMessage({
                         id: 'microbit.analogValue',
@@ -1067,7 +1161,8 @@ class Scratch3MicroBitBlocks {
                 analogIn: this.ANALOG_IN_MENU,
                 digitalValue: this.DIGITAL_VALUE_MENU,
                 slot: this.SLOT_MENU,
-                gpio: this.GPIO_MENU
+                gpio: this.GPIO_MENU,
+                axis: this.AXIS_MENU
             }
         };
     }
@@ -1389,6 +1484,33 @@ class Scratch3MicroBitBlocks {
         // if (isNaN(center)) range = 0;
         // center = Math.max(0, center);
         this._peripheral.setPinServo(pin, angle, null, null, util);
+    }
+
+    /**
+     * Return the value of magnetic field strength.
+     * @return {number} - the value of magnetic field strength [nano tesla].
+     */
+    getMagneticStrength () {
+        return this._peripheral.magneticStrength;
+    }
+
+    /**
+     * Return the value of acceleration on the specified axis.
+     * @param {object} args - the block's arguments.
+     * @property {AxisValues} AXIS - the axis (X, Y, Z).
+     * @return {number} - the value of acceleration on the axis [milli-g].
+     */
+    getAcceleration (args) {
+        switch (args.AXIS) {
+        case AxisValues.X:
+            return this._peripheral.accelerationX;
+        case AxisValues.Y:
+            return this._peripheral.accelerationY;
+        case AxisValues.Z:
+            return this._peripheral.accelerationZ;
+        default:
+            log.warn(`Unknown axis in getAcceleration: ${args.AXIS}`);
+        }
     }
 }
 
