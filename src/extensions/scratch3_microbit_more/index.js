@@ -26,7 +26,8 @@ const BLECommand = {
     CMD_PIN_INPUT: 0x90,
     CMD_PIN_OUTPUT: 0x91,
     CMD_PIN_PWM: 0x92,
-    CMD_PIN_SERVO: 0x93
+    CMD_PIN_SERVO: 0x93,
+    CMD_SLOT_VALUE: 0xA0
 };
 
 
@@ -503,6 +504,17 @@ class MicroBit {
         return this._sensors.slot[index];
     }
 
+    setSlotValue (slotIndex, slotValue, util) {
+        const dataView = new DataView(new ArrayBuffer(2));
+        dataView.setInt16(0, slotValue, true);
+        this.send(BLECommand.CMD_SLOT_VALUE,
+            new Uint8Array([
+                slotIndex,
+                dataView.getUint8(0),
+                dataView.getUint8(1)]),
+            util);
+        this._sensors.slot[slotIndex] = slotValue;
+    }
 }
 
 /**
@@ -1053,7 +1065,7 @@ class Scratch3MicroBitBlocks {
                 {
                     opcode: 'getSlotValue',
                     text: formatMessage({
-                        id: 'microbit.slogValue',
+                        id: 'microbit.getSlogValue',
                         default: 'slot [SLOT]',
                         description: 'value of the slot'
                     }),
@@ -1063,6 +1075,26 @@ class Scratch3MicroBitBlocks {
                             type: ArgumentType.STRING,
                             menu: 'slot',
                             defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'setSlotValue',
+                    text: formatMessage({
+                        id: 'microbit.setSlogValue',
+                        default: 'slot [SLOT] to [VALUE]',
+                        description: 'set value into the slot'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        SLOT: {
+                            type: ArgumentType.STRING,
+                            menu: 'slot',
+                            defaultValue: '0'
+                        },
+                        VALUE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
                         }
                     }
                 },
@@ -1414,6 +1446,21 @@ class Scratch3MicroBitBlocks {
         if (isNaN(slot)) return 0;
         if (!this.SLOT_MENU.includes(slot.toString())) return 0;
         return this._peripheral.getSlotValue(slot);
+    }
+
+    /**
+     * Set the slot value.
+     * @param {object} args - the block's arguments.
+     * @param {object} util - utility object provided by the runtime.
+     * @return {undefined}
+     */
+    setSlotValue (args, util) {
+        const slotIndex = parseInt(args.SLOT, 10);
+        if (isNaN(slotIndex)) return;
+        if (!this.SLOT_MENU.includes(slotIndex.toString())) return;
+        const slotValue = parseInt(args.VALUE, 10);
+        if (isNaN(slotValue)) return;
+        this._peripheral.setSlotValue(slotIndex, slotValue, util);
     }
 
     /**
