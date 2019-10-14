@@ -70,7 +70,7 @@ const G = 1024;
 /**
  * Manage communication with a MicroBit peripheral over a Scrath Link client socket.
  */
-class MicroBit {
+class MicroBitMore {
 
     /**
      * Construct a MicroBit communication object.
@@ -582,7 +582,7 @@ const AxisValues = {
 /**
  * Scratch 3.0 blocks to interact with a MicroBit peripheral.
  */
-class Scratch3MicroBitBlocks {
+class Scratch3MicroBitMoreBlocks {
 
     /**
      * @return {string} - the name of this extension.
@@ -808,7 +808,7 @@ class Scratch3MicroBitBlocks {
         this.runtime = runtime;
 
         // Create a new MicroBit peripheral instance
-        this._peripheral = new MicroBit(this.runtime, Scratch3MicroBitBlocks.EXTENSION_ID);
+        this._peripheral = new MicroBitMore(this.runtime, Scratch3MicroBitMoreBlocks.EXTENSION_ID);
     }
 
     /**
@@ -816,8 +816,8 @@ class Scratch3MicroBitBlocks {
      */
     getInfo () {
         return {
-            id: Scratch3MicroBitBlocks.EXTENSION_ID,
-            name: Scratch3MicroBitBlocks.EXTENSION_NAME,
+            id: Scratch3MicroBitMoreBlocks.EXTENSION_ID,
+            name: Scratch3MicroBitMoreBlocks.EXTENSION_NAME,
             blockIconURI: blockIconURI,
             showStatusButton: true,
             blocks: [
@@ -1354,10 +1354,10 @@ class Scratch3MicroBitBlocks {
     _isTilted (direction) {
         switch (direction) {
         case MicroBitTiltDirection.ANY:
-            return (Math.abs(this._peripheral.tiltX / 10) >= Scratch3MicroBitBlocks.TILT_THRESHOLD) ||
-                (Math.abs(this._peripheral.tiltY / 10) >= Scratch3MicroBitBlocks.TILT_THRESHOLD);
+            return (Math.abs(this._peripheral.tiltX / 10) >= Scratch3MicroBitMoreBlocks.TILT_THRESHOLD) ||
+                (Math.abs(this._peripheral.tiltY / 10) >= Scratch3MicroBitMoreBlocks.TILT_THRESHOLD);
         default:
-            return this._getTiltAngle(direction) >= Scratch3MicroBitBlocks.TILT_THRESHOLD;
+            return this._getTiltAngle(direction) >= Scratch3MicroBitMoreBlocks.TILT_THRESHOLD;
         }
     }
 
@@ -1561,4 +1561,4 @@ class Scratch3MicroBitBlocks {
     }
 }
 
-module.exports = Scratch3MicroBitBlocks;
+module.exports = Scratch3MicroBitMoreBlocks;
