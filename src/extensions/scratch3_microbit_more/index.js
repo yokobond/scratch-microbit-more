@@ -1186,16 +1186,46 @@ class Scratch3MicroBitMoreBlocks {
                 }
             ],
             menus: {
-                buttons: this.BUTTONS_MENU,
-                gestures: this.GESTURES_MENU,
-                pinState: this.PIN_STATE_MENU,
-                tiltDirection: this.TILT_DIRECTION_MENU,
-                tiltDirectionAny: this.TILT_DIRECTION_ANY_MENU,
-                analogIn: this.ANALOG_IN_MENU,
-                digitalValue: this.DIGITAL_VALUE_MENU,
-                slot: this.SLOT_MENU,
-                gpio: this.GPIO_MENU,
-                axis: this.AXIS_MENU
+                buttons: {
+                    acceptReporters: true,
+                    items: this.BUTTONS_MENU
+                },
+                gestures: {
+                    acceptReporters: true,
+                    items: this.GESTURES_MENU
+                },
+                pinState: {
+                    acceptReporters: true,
+                    items: this.PIN_STATE_MENU
+                },
+                tiltDirection: {
+                    acceptReporters: true,
+                    items: this.TILT_DIRECTION_MENU
+                },
+                tiltDirectionAny: {
+                    acceptReporters: true,
+                    items: this.TILT_DIRECTION_ANY_MENU
+                },
+                analogIn: {
+                    acceptReporters: true,
+                    items: this.ANALOG_IN_MENU
+                },
+                digitalValue: {
+                    acceptReporters: true,
+                    items: this.DIGITAL_VALUE_MENU
+                },
+                slot: {
+                    acceptReporters: true,
+                    items: this.SLOT_MENU
+                },
+                gpio: {
+                    acceptReporters: true,
+                    items: this.GPIO_MENU
+                },
+                axis: {
+                    acceptReporters: true,
+                    items: this.AXIS_MENU
+                }
             }
         };
     }
