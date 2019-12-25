@@ -1636,6 +1636,38 @@ class Scratch3MicroBitMoreBlocks {
                 'microbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
                 'microbitMore.digitalValueMenu.Low': 'ロー',
                 'microbitMore.digitalValueMenu.High': 'ハイ'
+            'pt-br': {
+                'microbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
+                'microbitMore.lightLevel': 'Intensidade da Luz',
+                'microbitMore.compassHeading': 'Está em direção ao Norte',
+                'microbitMore.magneticForce': 'Força Magnética',
+                'microbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
+                'microbitMore.analogValue': 'Ler Pino Analógico [PIN]',
+                'microbitMore.getSlogValue': 'Compartilhar dado slot [SLOT]',
+                'microbitMore.setSlogValue': 'Definir slot [SLOT] com valor [VALUE]',
+                'microbitMore.setInput': 'Definir Pino[PIN] como entrada',
+                'microbitMode.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
+                'microbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
+                'microbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
+                'microbitMore.digitalValueMenu.Low': 'desligado',
+                'microbitMore.digitalValueMenu.High': 'ligado'
+            },
+            'pt': {
+                'microbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
+                'microbitMore.lightLevel': 'Intensidade da Luz',
+                'microbitMore.compassHeading': 'Está em direção ao Norte',
+                'microbitMore.magneticForce': 'Força Magnética',
+                'microbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
+                'microbitMore.analogValue': 'Ler Pino Analógico [PIN]',
+                'microbitMore.getSlogValue': 'Compartilhar dado slot [SLOT]',
+                'microbitMore.setSlogValue': 'Definir slot [SLOT] com valor [VALUE]',
+                'microbitMore.setInput': 'Definir Pino[PIN] como entrada',
+                'microbitMode.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
+                'microbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
+                'microbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
+                'microbitMore.digitalValueMenu.Low': 'desligado',
+                'microbitMore.digitalValueMenu.High': 'ligado'
+            }				
             }
         };
         for (const locale in extTranslations) {
