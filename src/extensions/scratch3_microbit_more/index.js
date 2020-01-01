@@ -1636,6 +1636,7 @@ class Scratch3MicroBitMoreBlocks {
                 'microbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
                 'microbitMore.digitalValueMenu.Low': 'ロー',
                 'microbitMore.digitalValueMenu.High': 'ハイ'
+            },
             'pt-br': {
                 'microbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
                 'microbitMore.lightLevel': 'Intensidade da Luz',
@@ -1667,7 +1668,6 @@ class Scratch3MicroBitMoreBlocks {
                 'microbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
                 'microbitMore.digitalValueMenu.Low': 'desligado',
                 'microbitMore.digitalValueMenu.High': 'ligado'
-            }				
             }
         };
         for (const locale in extTranslations) {
