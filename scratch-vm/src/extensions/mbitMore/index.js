@@ -47,7 +47,7 @@ const BLESendInterval = 100;
  * A string to report to the BLE socket when the micro:bit has stopped receiving data.
  * @type {string}
  */
-const BLEDataStoppedError = 'micro:bit More extension stopped receiving data';
+const BLEDataStoppedError = 'Microbit More extension stopped receiving data';
 
 /**
  * Enum for micro:bit protocol.
@@ -70,7 +70,7 @@ const G = 1024;
 /**
  * Manage communication with a MicroBit peripheral over a Scrath Link client socket.
  */
-class MicroBitMore {
+class MbitMore {
 
     /**
      * Construct a MicroBit communication object.
@@ -593,20 +593,20 @@ const AxisValues = {
 /**
  * Scratch 3.0 blocks to interact with a MicroBit peripheral.
  */
-class Scratch3MicroBitMoreBlocks {
+class MbitMoreBlocks {
 
     /**
      * @return {string} - the name of this extension.
      */
     static get EXTENSION_NAME () {
-        return 'micro:bit more';
+        return 'Mbit More';
     }
 
     /**
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID () {
-        return 'microbitMore';
+        return 'mbitMore';
     }
 
     /**
@@ -773,7 +773,7 @@ class Scratch3MicroBitMoreBlocks {
         return [
             {
                 text: formatMessage({
-                    id: 'microbitMore.digitalValueMenu.Low',
+                    id: 'mbitMore.digitalValueMenu.Low',
                     default: 'Low',
                     description: 'label for low value in digital output menu for microbit more extension'
                 }),
@@ -781,7 +781,7 @@ class Scratch3MicroBitMoreBlocks {
             },
             {
                 text: formatMessage({
-                    id: 'microbitMore.digitalValueMenu.High',
+                    id: 'mbitMore.digitalValueMenu.High',
                     default: 'High',
                     description: 'label for high value in digital output menu for microbit more extension'
                 }),
@@ -819,7 +819,7 @@ class Scratch3MicroBitMoreBlocks {
         this.runtime = runtime;
 
         // Create a new MicroBit peripheral instance
-        this._peripheral = new MicroBitMore(this.runtime, Scratch3MicroBitMoreBlocks.EXTENSION_ID);
+        this._peripheral = new MbitMore(this.runtime, MbitMoreBlocks.EXTENSION_ID);
     }
 
     /**
@@ -828,8 +828,8 @@ class Scratch3MicroBitMoreBlocks {
     getInfo () {
         this.setupTranslations();
         return {
-            id: Scratch3MicroBitMoreBlocks.EXTENSION_ID,
-            name: Scratch3MicroBitMoreBlocks.EXTENSION_NAME,
+            id: MbitMoreBlocks.EXTENSION_ID,
+            name: MbitMoreBlocks.EXTENSION_NAME,
             blockIconURI: blockIconURI,
             showStatusButton: true,
             blocks: [
@@ -1002,7 +1002,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'isPinConnected',
                     text: formatMessage({
-                        id: 'microbitMore.isPinConnected',
+                        id: 'mbitMore.isPinConnected',
                         default: '[PIN] pin connected?',
                         description: 'is the selected pin connected to Earth/Ground?'
                     }),
@@ -1018,7 +1018,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'getLightLevel',
                     text: formatMessage({
-                        id: 'microbitMore.lightLevel',
+                        id: 'mbitMore.lightLevel',
                         default: 'light intensity',
                         description: 'how much the amount of light falling on the LEDs on micro:bit'
                     }),
@@ -1027,7 +1027,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'getCompassHeading',
                     text: formatMessage({
-                        id: 'microbitMore.compassHeading',
+                        id: 'mbitMore.compassHeading',
                         default: 'angle with the North',
                         description: 'angle from the North to the micro:bit heading direction'
                     }),
@@ -1036,7 +1036,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'getMagneticStrength',
                     text: formatMessage({
-                        id: 'microbitMore.magneticForce',
+                        id: 'mbitMore.magneticForce',
                         default: 'magnetic force',
                         description: 'value of magnetic field strength (nano tesla)'
                     }),
@@ -1045,7 +1045,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'getAcceleration',
                     text: formatMessage({
-                        id: 'microbitMore.acceleration',
+                        id: 'mbitMore.acceleration',
                         default: 'acceleration [AXIS]',
                         description: 'value of acceleration on the axis (milli-g)'
                     }),
@@ -1061,7 +1061,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'getAnalogValue',
                     text: formatMessage({
-                        id: 'microbitMore.analogValue',
+                        id: 'mbitMore.analogValue',
                         default: 'analog in pin [PIN]',
                         description: 'analog input value of the pin'
                     }),
@@ -1077,7 +1077,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'getSlotValue',
                     text: formatMessage({
-                        id: 'microbitMore.getSlogValue',
+                        id: 'mbitMore.getSlogValue',
                         default: 'slot [SLOT]',
                         description: 'value of the slot'
                     }),
@@ -1093,7 +1093,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'setSlotValue',
                     text: formatMessage({
-                        id: 'microbitMore.setSlogValue',
+                        id: 'mbitMore.setSlogValue',
                         default: 'slot [SLOT] to [VALUE]',
                         description: 'set value into the slot'
                     }),
@@ -1113,7 +1113,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'setInput',
                     text: formatMessage({
-                        id: 'microbitMore.setInput',
+                        id: 'mbitMore.setInput',
                         default: 'set [PIN] Input',
                         description: 'set pin to Input mode'
                     }),
@@ -1129,7 +1129,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'setOutput',
                     text: formatMessage({
-                        id: 'microbitMode.setOutput',
+                        id: 'mbitMore.setOutput',
                         default: 'set [PIN] Digital [LEVEL]',
                         description: 'set pin to Digtal Output mode and the level(0 or 1)'
                     }),
@@ -1150,7 +1150,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'setPWM',
                     text: formatMessage({
-                        id: 'microbitMore.setPWM',
+                        id: 'mbitMore.setPWM',
                         default: 'set [PIN] PWM [LEVEL]',
                         description: 'set pin to PWM mode and the level(0 to 1023)'
                     }),
@@ -1170,7 +1170,7 @@ class Scratch3MicroBitMoreBlocks {
                 {
                     opcode: 'setServo',
                     text: formatMessage({
-                        id: 'microbitMore.setServo',
+                        id: 'mbitMore.setServo',
                         default: 'set [PIN] Servo [ANGLE]',
                         description: 'set pin to Servo mode and the angle(0 to 180)'
                     }),
@@ -1396,10 +1396,10 @@ class Scratch3MicroBitMoreBlocks {
     _isTilted (direction) {
         switch (direction) {
         case MicroBitTiltDirection.ANY:
-            return (Math.abs(this._peripheral.tiltX / 10) >= Scratch3MicroBitMoreBlocks.TILT_THRESHOLD) ||
-                (Math.abs(this._peripheral.tiltY / 10) >= Scratch3MicroBitMoreBlocks.TILT_THRESHOLD);
+            return (Math.abs(this._peripheral.tiltX / 10) >= MbitMoreBlocks.TILT_THRESHOLD) ||
+                (Math.abs(this._peripheral.tiltY / 10) >= MbitMoreBlocks.TILT_THRESHOLD);
         default:
-            return this._getTiltAngle(direction) >= Scratch3MicroBitMoreBlocks.TILT_THRESHOLD;
+            return this._getTiltAngle(direction) >= MbitMoreBlocks.TILT_THRESHOLD;
         }
     }
 
@@ -1436,7 +1436,7 @@ class Scratch3MicroBitMoreBlocks {
         return this._peripheral._checkPinState(pin);
     }
 
-    // microbit_more
+    // Mbit More extended functions
 
     /**
      * Test the selected pin is connected to the ground.
@@ -1606,68 +1606,68 @@ class Scratch3MicroBitMoreBlocks {
         const localeSetup = formatMessage.setup();
         const extTranslations = {
             'ja': {
-                'microbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
-                'microbitMore.lightLevel': '明るさ',
-                'microbitMore.compassHeading': '北からの角度',
-                'microbitMore.magneticForce': '磁力',
-                'microbitMore.acceleration': '加速度 [AXIS]',
-                'microbitMore.analogValue': 'ピン [PIN] のアナログレベル',
-                'microbitMore.getSlogValue': 'スロット [SLOT]',
-                'microbitMore.setSlogValue': 'スロット [SLOT] を [VALUE] にする',
-                'microbitMore.setInput': 'ピン [PIN] を入力モードにする',
-                'microbitMode.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
-                'microbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
-                'microbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] 度にする',
-                'microbitMore.digitalValueMenu.Low': 'Low',
-                'microbitMore.digitalValueMenu.High': 'High'
+                'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
+                'mbitMore.lightLevel': '明るさ',
+                'mbitMore.compassHeading': '北からの角度',
+                'mbitMore.magneticForce': '磁力',
+                'mbitMore.acceleration': '加速度 [AXIS]',
+                'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
+                'mbitMore.getSlogValue': 'スロット [SLOT]',
+                'mbitMore.setSlogValue': 'スロット [SLOT] を [VALUE] にする',
+                'mbitMore.setInput': 'ピン [PIN] を入力モードにする',
+                'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
+                'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
+                'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] 度にする',
+                'mbitMore.digitalValueMenu.Low': 'Low',
+                'mbitMore.digitalValueMenu.High': 'High'
             },
             'ja-Hira': {
-                'microbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
-                'microbitMore.lightLevel': 'あかるさ',
-                'microbitMore.compassHeading': 'きたからのかくど',
-                'microbitMore.magneticForce': 'じりょく',
-                'microbitMore.acceleration': 'かそくど [AXIS]',
-                'microbitMore.analogValue': 'ピン [PIN] のアナログレベル',
-                'microbitMore.getSlogValue': 'スロット [SLOT]',
-                'microbitMore.setSlogValue': 'スロット [SLOT] を [VALUE] にする',
-                'microbitMore.setInput': 'ピン [PIN] をにゅうりょくモードにする',
-                'microbitMode.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
-                'microbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
-                'microbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
-                'microbitMore.digitalValueMenu.Low': 'ロー',
-                'microbitMore.digitalValueMenu.High': 'ハイ'
+                'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
+                'mbitMore.lightLevel': 'あかるさ',
+                'mbitMore.compassHeading': 'きたからのかくど',
+                'mbitMore.magneticForce': 'じりょく',
+                'mbitMore.acceleration': 'かそくど [AXIS]',
+                'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
+                'mbitMore.getSlogValue': 'スロット [SLOT]',
+                'mbitMore.setSlogValue': 'スロット [SLOT] を [VALUE] にする',
+                'mbitMore.setInput': 'ピン [PIN] をにゅうりょくモードにする',
+                'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
+                'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
+                'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
+                'mbitMore.digitalValueMenu.Low': 'ロー',
+                'mbitMore.digitalValueMenu.High': 'ハイ'
             },
             'pt-br': {
-                'microbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
-                'microbitMore.lightLevel': 'Intensidade da Luz',
-                'microbitMore.compassHeading': 'Está em direção ao Norte',
-                'microbitMore.magneticForce': 'Força Magnética',
-                'microbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
-                'microbitMore.analogValue': 'Ler Pino Analógico [PIN]',
-                'microbitMore.getSlogValue': 'Compartilhar dado slot [SLOT]',
-                'microbitMore.setSlogValue': 'Definir slot [SLOT] com valor [VALUE]',
-                'microbitMore.setInput': 'Definir Pino[PIN] como entrada',
-                'microbitMode.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
-                'microbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
-                'microbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
-                'microbitMore.digitalValueMenu.Low': 'desligado',
-                'microbitMore.digitalValueMenu.High': 'ligado'
+                'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
+                'mbitMore.lightLevel': 'Intensidade da Luz',
+                'mbitMore.compassHeading': 'Está em direção ao Norte',
+                'mbitMore.magneticForce': 'Força Magnética',
+                'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
+                'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
+                'mbitMore.getSlogValue': 'Compartilhar dado slot [SLOT]',
+                'mbitMore.setSlogValue': 'Definir slot [SLOT] com valor [VALUE]',
+                'mbitMore.setInput': 'Definir Pino[PIN] como entrada',
+                'mbitMore.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
+                'mbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
+                'mbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
+                'mbitMore.digitalValueMenu.Low': 'desligado',
+                'mbitMore.digitalValueMenu.High': 'ligado'
             },
             'pt': {
-                'microbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
-                'microbitMore.lightLevel': 'Intensidade da Luz',
-                'microbitMore.compassHeading': 'Está em direção ao Norte',
-                'microbitMore.magneticForce': 'Força Magnética',
-                'microbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
-                'microbitMore.analogValue': 'Ler Pino Analógico [PIN]',
-                'microbitMore.getSlogValue': 'Compartilhar dado slot [SLOT]',
-                'microbitMore.setSlogValue': 'Definir slot [SLOT] com valor [VALUE]',
-                'microbitMore.setInput': 'Definir Pino[PIN] como entrada',
-                'microbitMode.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
-                'microbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
-                'microbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
-                'microbitMore.digitalValueMenu.Low': 'desligado',
-                'microbitMore.digitalValueMenu.High': 'ligado'
+                'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
+                'mbitMore.lightLevel': 'Intensidade da Luz',
+                'mbitMore.compassHeading': 'Está em direção ao Norte',
+                'mbitMore.magneticForce': 'Força Magnética',
+                'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
+                'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
+                'mbitMore.getSlogValue': 'Compartilhar dado slot [SLOT]',
+                'mbitMore.setSlogValue': 'Definir slot [SLOT] com valor [VALUE]',
+                'mbitMore.setInput': 'Definir Pino[PIN] como entrada',
+                'mbitMore.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
+                'mbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
+                'mbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
+                'mbitMore.digitalValueMenu.Low': 'desligado',
+                'mbitMore.digitalValueMenu.High': 'ligado'
             }
         };
         for (const locale in extTranslations) {
@@ -1679,4 +1679,4 @@ class Scratch3MicroBitMoreBlocks {
     }
 }
 
-module.exports = Scratch3MicroBitMoreBlocks;
+module.exports = MbitMoreBlocks;
