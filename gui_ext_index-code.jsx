@@ -5,7 +5,7 @@ import mbitMoreConnectionIconURL from './mbitMore/mbitMore-illustration.svg';
 import mbitMoreConnectionSmallIconURL from './mbitMore/mbitMore-small.svg';
 // </icon>
 
-[
+export default [
     // <configuration>
     {
         name: 'Mbit More',
@@ -38,4 +38,4 @@ import mbitMoreConnectionSmallIconURL from './mbitMore/mbitMore-small.svg';
         helpLink: 'https://lab.yengawa.com/project/scratch-microbit-more/'
     },
     // </configuration>
-]
+];
