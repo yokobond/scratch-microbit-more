@@ -27,7 +27,7 @@ const BLECommand = {
     CMD_PIN_OUTPUT: 0x91,
     CMD_PIN_PWM: 0x92,
     CMD_PIN_SERVO: 0x93,
-    CMD_SLOT_VALUE: 0xA0
+    CMD_SHARED_DATA_SET: 0xA0
 };
 
 
@@ -116,7 +116,7 @@ class MbitMore {
             compassHeading: 0,
             analogValue: {},
             digitalValue: {},
-            slot: [0, 0, 0, 0]
+            sharedData: [0, 0, 0, 0]
         };
 
         this.analogIn = [0, 1, 2];
@@ -131,7 +131,7 @@ class MbitMore {
         this.gpio.forEach(pinIndex => {
             this._sensors.digitalValue[pinIndex] = 0;
         });
-        this.slotLength = this._sensors.slot.length;
+        this.sharedDataLength = this._sensors.sharedData.length;
 
         /**
          * The most recently received value for each gesture.
@@ -461,10 +461,10 @@ class MbitMore {
             this._sensors.lightLevel = dataView.getUint8(18);
         }
         if (data[19] === 0x02) {
-            this._sensors.slot[0] = dataView.getInt16(10, true);
-            this._sensors.slot[1] = dataView.getInt16(12, true);
-            this._sensors.slot[2] = dataView.getInt16(14, true);
-            this._sensors.slot[3] = dataView.getInt16(16, true);
+            this._sensors.sharedData[0] = dataView.getInt16(10, true);
+            this._sensors.sharedData[1] = dataView.getInt16(12, true);
+            this._sensors.sharedData[2] = dataView.getInt16(14, true);
+            this._sensors.sharedData[3] = dataView.getInt16(16, true);
             const gpioData = dataView.getUint8(18);
             for (let i = 0; i < this.gpio.length; i++) {
                 this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
@@ -507,24 +507,24 @@ class MbitMore {
     }
 
     /**
-     * Return the value of the slot.
-     * @param {number} index - the slot index.
-     * @return {number} - the latest value received for the slot.
+     * Return the value of the shared data.
+     * @param {number} index - the shared data index.
+     * @return {number} - the latest value received for the shared data.
      */
-    getSlotValue (index) {
-        return this._sensors.slot[index];
+    getSharedData (index) {
+        return this._sensors.sharedData[index];
     }
 
-    setSlotValue (slotIndex, slotValue, util) {
+    setSharedData (sharedDataIndex, sharedDataValue, util) {
         const dataView = new DataView(new ArrayBuffer(2));
-        dataView.setInt16(0, slotValue, true);
-        this.send(BLECommand.CMD_SLOT_VALUE,
+        dataView.setInt16(0, sharedDataValue, true);
+        this.send(BLECommand.CMD_SHARED_DATA_SET,
             new Uint8Array([
-                slotIndex,
+                sharedDataIndex,
                 dataView.getUint8(0),
                 dataView.getUint8(1)]),
             util);
-        this._sensors.slot[slotIndex] = slotValue;
+        this._sensors.sharedData[sharedDataIndex] = sharedDataValue;
     }
 }
 
@@ -757,9 +757,9 @@ class MbitMoreBlocks {
         return this._peripheral.analogIn.map(pinIndex => pinIndex.toString());
     }
 
-    get SLOT_MENU () {
+    get SHARED_DATA_INDEX_MENU () {
         const menu = [];
-        for (let i = 0; i < this._peripheral.slotLength; i++) {
+        for (let i = 0; i < this._peripheral.sharedDataLength; i++) {
             menu.push(i.toString());
         }
         return menu;
@@ -1075,33 +1075,33 @@ class MbitMoreBlocks {
                     }
                 },
                 {
-                    opcode: 'getSlotValue',
+                    opcode: 'getSharedData',
                     text: formatMessage({
-                        id: 'mbitMore.getSlogValue',
-                        default: 'slot [SLOT]',
-                        description: 'value of the slot'
+                        id: 'mbitMore.getSharedData',
+                        default: 'shared data [INDEX]',
+                        description: 'value of the shared data'
                     }),
                     blockType: BlockType.REPORTER,
                     arguments: {
-                        SLOT: {
+                        INDEX: {
                             type: ArgumentType.STRING,
-                            menu: 'slot',
+                            menu: 'sharedDataIndex',
                             defaultValue: '0'
                         }
                     }
                 },
                 {
-                    opcode: 'setSlotValue',
+                    opcode: 'setSharedData',
                     text: formatMessage({
-                        id: 'mbitMore.setSlogValue',
-                        default: 'slot [SLOT] to [VALUE]',
-                        description: 'set value into the slot'
+                        id: 'mbitMore.setSharedData',
+                        default: 'shared data [INDEX] to [VALUE]',
+                        description: 'set value into the shared data'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
-                        SLOT: {
+                        INDEX: {
                             type: ArgumentType.STRING,
-                            menu: 'slot',
+                            menu: 'sharedDataIndex',
                             defaultValue: '0'
                         },
                         VALUE: {
@@ -1225,9 +1225,9 @@ class MbitMoreBlocks {
                     acceptReporters: true,
                     items: this.DIGITAL_VALUE_MENU
                 },
-                slot: {
+                sharedDataIndex: {
                     acceptReporters: true,
-                    items: this.SLOT_MENU
+                    items: this.SHARED_DATA_INDEX_MENU
                 },
                 gpio: {
                     acceptReporters: true,
@@ -1479,30 +1479,32 @@ class MbitMoreBlocks {
     }
 
     /**
-     * Return value of the slot.
+     * Return value of the shared data.
      * @param {object} args - the block's arguments.
-     * @return {number} - analog value of the slot.
+     * @property {string} args.INDEX - index of the shared data.
+     * @return {number} - analog value of the shared data.
      */
-    getSlotValue (args) {
-        const slot = parseInt(args.SLOT, 10);
-        if (isNaN(slot)) return 0;
-        if (!this.SLOT_MENU.includes(slot.toString())) return 0;
-        return this._peripheral.getSlotValue(slot);
+    getSharedData (args) {
+        const sharedDataIndex = parseInt(args.INDEX, 10);
+        if (Number.isNaN(sharedDataIndex)) return 0;
+        if (!this.SHARED_DATA_INDEX_MENU.includes(sharedDataIndex.toString())) return 0;
+        return this._peripheral.getSharedData(sharedDataIndex);
     }
 
     /**
-     * Set the slot value.
+     * Set the shared data value.
      * @param {object} args - the block's arguments.
+     * @property {string} args.INDEX - index of the shared data.
      * @param {object} util - utility object provided by the runtime.
      * @return {undefined}
      */
-    setSlotValue (args, util) {
-        const slotIndex = parseInt(args.SLOT, 10);
-        if (isNaN(slotIndex)) return;
-        if (!this.SLOT_MENU.includes(slotIndex.toString())) return;
-        const slotValue = parseInt(args.VALUE, 10);
-        if (isNaN(slotValue)) return;
-        this._peripheral.setSlotValue(slotIndex, slotValue, util);
+    setSharedData (args, util) {
+        const sharedDataIndex = parseInt(args.INDEX, 10);
+        if (Number.isNaN(sharedDataIndex)) return;
+        if (!this.SHARED_DATA_INDEX_MENU.includes(sharedDataIndex.toString())) return;
+        const sharedDataValue = parseInt(args.VALUE, 10);
+        if (Number.isNaN(sharedDataValue)) return;
+        this._peripheral.setSharedData(sharedDataIndex, sharedDataValue, util);
     }
 
     /**
@@ -1612,8 +1614,8 @@ class MbitMoreBlocks {
                 'mbitMore.magneticForce': '磁力',
                 'mbitMore.acceleration': '加速度 [AXIS]',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
-                'mbitMore.getSlogValue': 'スロット [SLOT]',
-                'mbitMore.setSlogValue': 'スロット [SLOT] を [VALUE] にする',
+                'mbitMore.getSharedData': '共有データ [INDEX]',
+                'mbitMore.setSharedData': '共有データ [INDEX] を [VALUE] にする',
                 'mbitMore.setInput': 'ピン [PIN] を入力モードにする',
                 'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
@@ -1628,8 +1630,8 @@ class MbitMoreBlocks {
                 'mbitMore.magneticForce': 'じりょく',
                 'mbitMore.acceleration': 'かそくど [AXIS]',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
-                'mbitMore.getSlogValue': 'スロット [SLOT]',
-                'mbitMore.setSlogValue': 'スロット [SLOT] を [VALUE] にする',
+                'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
+                'mbitMore.setSharedData': 'きょうゆうデータ [INDEX] を [VALUE] にする',
                 'mbitMore.setInput': 'ピン [PIN] をにゅうりょくモードにする',
                 'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
@@ -1644,8 +1646,8 @@ class MbitMoreBlocks {
                 'mbitMore.magneticForce': 'Força Magnética',
                 'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
                 'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
-                'mbitMore.getSlogValue': 'Compartilhar dado slot [SLOT]',
-                'mbitMore.setSlogValue': 'Definir slot [SLOT] com valor [VALUE]',
+                'mbitMore.getSharedData': 'Dados compartilhados [INDEX]',
+                'mbitMore.setSharedData': 'Definir dados compartilhados [INDEX] com valor [VALUE]',
                 'mbitMore.setInput': 'Definir Pino[PIN] como entrada',
                 'mbitMore.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
                 'mbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
@@ -1660,8 +1662,8 @@ class MbitMoreBlocks {
                 'mbitMore.magneticForce': 'Força Magnética',
                 'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
                 'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
-                'mbitMore.getSlogValue': 'Compartilhar dado slot [SLOT]',
-                'mbitMore.setSlogValue': 'Definir slot [SLOT] com valor [VALUE]',
+                'mbitMore.getSharedData': 'Dados compartilhados [INDEX]',
+                'mbitMore.setSharedData': 'Definir dados compartilhados [INDEX] com valor [VALUE]',
                 'mbitMore.setInput': 'Definir Pino[PIN] como entrada',
                 'mbitMore.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
                 'mbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
