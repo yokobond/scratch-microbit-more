@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const { execSync } = require('child_process')
 
 const VmRoot = '../scratch-vm';
 const GuiRoot = '../scratch-gui';
@@ -53,3 +54,10 @@ if (indexCode.includes(ExtId)) {
     fs.writeFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), indexCode);
     console.log(`Added to extrnsion list: ${ExtId}`);
 }
+
+// Use local repositories.
+let stdout = execSync(`cd ${VmRoot} && npm link`);
+console.log(`stdout: ${stdout.toString()}`);
+
+stdout = execSync(`cd ${GuiRoot} && npm link scratch-vm`);
+console.log(`stdout: ${stdout.toString()}`);
