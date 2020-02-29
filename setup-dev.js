@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process')
 
+const ExtRoot = '.';
 const VmRoot = '../scratch-vm';
 const GuiRoot = '../scratch-gui';
 
@@ -12,11 +13,11 @@ const VmExtPath = 'src/extensions/' + VmExtDirName;
 const GuiExtPath = 'src/lib/libraries/extensions/' + ExtId;
 const VmExtManager = 'src/extension-support/extension-manager.js'
 const GuiExtIndex = 'src/lib/libraries/extensions/index.jsx'
-const GuiExtIndexConfig = fs.readFileSync('./gui_ext_index-code.jsx', 'utf-8');
+const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'gui_ext_index-code.jsx'), 'utf-8');
 
 // Make symbolic link in scratch-vm. 
 try {
-    fs.symlinkSync(path.resolve(path.join('./scratch-vm', VmExtPath)), path.resolve(path.join(VmRoot, VmExtPath)));
+    fs.symlinkSync(path.resolve(path.join(ExtRoot, 'scratch-vm', VmExtPath)), path.resolve(path.join(VmRoot, VmExtPath)));
     console.log(`Make link: ${path.resolve(path.join(VmRoot, VmExtPath))}`);
 } catch (err) {
     console.log(`Already exists link: ${path.resolve(path.join(VmRoot, VmExtPath))}`);
@@ -35,7 +36,7 @@ if (managerCode.includes(ExtId)) {
 
 // Make symbolic link in scratch-gui. 
 try {
-    fs.symlinkSync(path.resolve(path.join('./scratch-gui', GuiExtPath)), path.resolve(path.join(GuiRoot, GuiExtPath)));
+    fs.symlinkSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiExtPath)), path.resolve(path.join(GuiRoot, GuiExtPath)));
     console.log(`Make link: ${path.resolve(path.join(GuiRoot, GuiExtPath))}`);
 } catch (err) {
     console.log(`Already exists link: ${path.resolve(path.join(GuiRoot, GuiExtPath))}`);
