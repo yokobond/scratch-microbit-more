@@ -1,18 +1,18 @@
 // <icon>
-import mbitMoreIconURL from './mbitMore/mbitMore.png';
-import mbitMoreInsetIconURL from './mbitMore/mbitMore-small.svg';
-import mbitMoreConnectionIconURL from './mbitMore/mbitMore-illustration.svg';
-import mbitMoreConnectionSmallIconURL from './mbitMore/mbitMore-small.svg';
+import microbitMoreIconURL from './microbitMore/microbitMore.png';
+import microbitMoreInsetIconURL from './microbitMore/microbitMore-small.svg';
+import microbitMoreConnectionIconURL from './microbitMore/microbitMore-illustration.svg';
+import microbitMoreConnectionSmallIconURL from './microbitMore/microbitMore-small.svg';
 // </icon>
 
 export default [
     // <configuration>
     {
-        name: 'Mbit More',
-        extensionId: 'mbitMore',
+        name: 'micro:bit MORE',
+        extensionId: 'microbitMore',
         collaborator: 'Yengawa Lab',
-        iconURL: mbitMoreIconURL,
-        insetIconURL: mbitMoreInsetIconURL,
+        iconURL: microbitMoreIconURL,
+        insetIconURL: microbitMoreInsetIconURL,
         description: (
             <FormattedMessage
                 defaultMessage="Connect your projects with the world."
@@ -26,8 +26,8 @@ export default [
         internetConnectionRequired: false,
         launchPeripheralConnectionFlow: true,
         useAutoScan: false,
-        connectionIconURL: mbitMoreConnectionIconURL,
-        connectionSmallIconURL: mbitMoreConnectionSmallIconURL,
+        connectionIconURL: microbitMoreConnectionIconURL,
+        connectionSmallIconURL: microbitMoreConnectionSmallIconURL,
         connectingMessage: (
             <FormattedMessage
                 defaultMessage="Connecting"

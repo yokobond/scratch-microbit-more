@@ -599,14 +599,14 @@ class MbitMoreBlocks {
      * @return {string} - the name of this extension.
      */
     static get EXTENSION_NAME () {
-        return 'Mbit More';
+        return 'micro:bit more';
     }
 
     /**
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID () {
-        return 'mbitMore';
+        return 'microbitMore';
     }
 
     /**

@@ -4,8 +4,8 @@ const fs = require('fs');
 const VmRoot = '../scratch-vm';
 const GuiRoot = '../scratch-gui';
 
-const ExtId = 'mbitMore';
-const VmExtDirName = 'mbitMore';
+const ExtId = 'microbitMore';
+const VmExtDirName = 'microbitMore';
 
 const VmExtPath = 'src/extensions/' + VmExtDirName;
 const GuiExtPath = 'src/lib/libraries/extensions/' + ExtId;
