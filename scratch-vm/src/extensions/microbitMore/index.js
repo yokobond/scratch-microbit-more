@@ -30,6 +30,17 @@ const BLECommand = {
     CMD_SHARED_DATA_SET: 0xA0
 };
 
+const MBitMoreDataFormat = {
+    MIX_01: 0x01,
+    MIX_02: 0x02,
+    MIX_03: 0x03,
+    IO: 0x11,
+    ANSLOG_IN: 0x12,
+    LIGHT_SENSOR: 0x13,
+    ACCELEROMETER: 0x14,
+    MAGNETOMETER: 0x15,
+    SHARED_DATA: 0x16
+};
 
 /**
  * A time interval to wait (in milliseconds) before reporting to the BLE socket
@@ -55,10 +66,21 @@ const BLEDataStoppedError = 'Microbit More extension stopped receiving data';
  * @readonly
  * @enum {string}
  */
-const BLEUUID = {
-    service: 0xf005,
-    rxChar: '5261da01-fa7e-42ab-850b-7c80220097cc',
-    txChar: '5261da02-fa7e-42ab-850b-7c80220097cc'
+const MICROBIT_SERVICE = {
+    ID: 0xf005,
+    RX: '5261da01-fa7e-42ab-850b-7c80220097cc',
+    TX: '5261da02-fa7e-42ab-850b-7c80220097cc'
+};
+
+const MBITMORE_SERVICE = {
+    ID: 'a62d574e-1b34-4092-8dee-4151f63b2865',
+    CONFIG: 'a62d0001-1b34-4092-8dee-4151f63b2865',
+    IO: 'a62d0002-1b34-4092-8dee-4151f63b2865',
+    ANSLOG_IN: 'a62d0003-1b34-4092-8dee-4151f63b2865',
+    LIGHT_SENSOR: 'a62d0004-1b34-4092-8dee-4151f63b2865',
+    ACCELEROMETER: 'a62d0005-1b34-4092-8dee-4151f63b2865',
+    MAGNETOMETER: 'a62d0006-1b34-4092-8dee-4151f63b2865',
+    SHARED_DATA: 'a62d0007-1b34-4092-8dee-4151f63b2865'
 };
 
 /**
@@ -176,7 +198,8 @@ class MbitMore {
 
         this.reset = this.reset.bind(this);
         this._onConnect = this._onConnect.bind(this);
-        this._onMessage = this._onMessage.bind(this);
+        this._updateMicrobitService = this._updateMicrobitService.bind(this);
+        this._useMbitMoreService = true;
     }
 
     /**
@@ -328,8 +351,9 @@ class MbitMore {
         }
         this._ble = new BLE(this._runtime, this._extensionId, {
             filters: [
-                {services: [BLEUUID.service]}
-            ]
+                {services: [MICROBIT_SERVICE.ID]}
+            ],
+            optionalServices: [MBITMORE_SERVICE.ID]
         }, this._onConnect, this.reset);
     }
 
@@ -339,7 +363,12 @@ class MbitMore {
      */
     connect (id) {
         if (this._ble) {
+            this._ble.getServices = () => this._ble.sendRemoteRequest('getServices')
+                .catch(e => {
+                    this._ble._handleRequestError(e);
+                });
             this._ble.connectPeripheral(id);
+            this.peripheralId = id;
         }
     }
 
@@ -408,7 +437,7 @@ class MbitMore {
         }
         const data = Base64Util.uint8ArrayToBase64(output);
 
-        this._ble.write(BLEUUID.service, BLEUUID.txChar, data, 'base64', true).then(
+        this._ble.write(MICROBIT_SERVICE.ID, MICROBIT_SERVICE.TX, data, 'base64', true).then(
             () => {
                 this._busy = false;
                 window.clearTimeout(this._busyTimeoutID);
@@ -421,7 +450,38 @@ class MbitMore {
      * @private
      */
     _onConnect () {
-        this._ble.read(BLEUUID.service, BLEUUID.rxChar, true, this._onMessage);
+        this._ble.getServices()
+            .then(services => {
+                this._ble.startNotifications(MICROBIT_SERVICE.ID, MICROBIT_SERVICE.RX, this._updateMicrobitService);
+                // Workaround for ScratchLink v.1.3.0 MacOS returns service id as distorted format,
+                // such as "0000A62D574E-1B34-4092-8DEE-4151F63B2865-0000-1000-8000-00805f9b34fb".
+                this._useMbitMoreService = typeof services.find(
+                    element => element.toLowerCase().indexOf(MBITMORE_SERVICE.ID) !== -1) !== 'undefined';
+                if (this._useMbitMoreService) {
+                    // Microbit More service is available.
+                    const config = Base64Util.uint8ArrayToBase64(Uint8Array.of(1)); // protocol ver.1.
+                    this._ble.write(MBITMORE_SERVICE.ID, MBITMORE_SERVICE.CONFIG, config, 'base64', false);
+                    this._ble.startNotifications(
+                        MBITMORE_SERVICE.ID,
+                        MBITMORE_SERVICE.IO,
+                        this._updateMicrobitService);
+                    this._ble.startNotifications(
+                        MBITMORE_SERVICE.ID,
+                        MBITMORE_SERVICE.LIGHT_SENSOR,
+                        this._updateMicrobitService);
+                    this._ble.startNotifications(
+                        MBITMORE_SERVICE.ID,
+                        MBITMORE_SERVICE.ACCELEROMETER,
+                        this._updateMicrobitService);
+                    this._ble.startNotifications(MBITMORE_SERVICE.ID,
+                        MBITMORE_SERVICE.MAGNETOMETER,
+                        this._updateMicrobitService);
+                    this._ble.startNotifications(
+                        MBITMORE_SERVICE.ID,
+                        MBITMORE_SERVICE.SHARED_DATA,
+                        this._updateMicrobitService);
+                }
+            });
         this._timeoutID = window.setTimeout(
             () => this._ble.handleDisconnectError(BLEDataStoppedError),
             BLETimeout
@@ -430,37 +490,45 @@ class MbitMore {
 
     /**
      * Process the sensor data from the incoming BLE characteristic.
-     * @param {object} base64 - the incoming BLE data.
+     * @param {string} msg - the incoming BLE data.
      * @private
      */
-    _onMessage (base64) {
-        // parse data
-        const data = Base64Util.base64ToUint8Array(base64);
-
-        this._sensors.tiltX = data[1] | (data[0] << 8);
-        if (this._sensors.tiltX > (1 << 15)) this._sensors.tiltX -= (1 << 16);
-        this._sensors.tiltY = data[3] | (data[2] << 8);
-        if (this._sensors.tiltY > (1 << 15)) this._sensors.tiltY -= (1 << 16);
-
-        this._sensors.buttonA = data[4];
-        this._sensors.buttonB = data[5];
-
-        this._sensors.touchPins[0] = data[6];
-        this._sensors.touchPins[1] = data[7];
-        this._sensors.touchPins[2] = data[8];
-
-        this._sensors.gestureState = data[9];
-
-        // More extension
+    _updateMicrobitService (msg) {
+        const data = Base64Util.base64ToUint8Array(msg);
         const dataView = new DataView(data.buffer, 0);
-        if (data[19] === 0x01) {
+        const dataFormat = dataView.getInt8(19);
+        if (dataFormat !== MBitMoreDataFormat.IO &&
+            dataFormat !== MBitMoreDataFormat.ANSLOG_IN &&
+            dataFormat !== MBitMoreDataFormat.LIGHT_SENSOR &&
+            dataFormat !== MBitMoreDataFormat.ACCELEROMETER &&
+            dataFormat !== MBitMoreDataFormat.MAGNETOMETER &&
+            dataFormat !== MBitMoreDataFormat.SHARED_DATA) {
+            // Read original micro:bit data.
+            this._sensors.tiltX = data[1] | (data[0] << 8);
+            if (this._sensors.tiltX > (1 << 15)) this._sensors.tiltX -= (1 << 16);
+            this._sensors.tiltY = data[3] | (data[2] << 8);
+            if (this._sensors.tiltY > (1 << 15)) this._sensors.tiltY -= (1 << 16);
+    
+            this._sensors.buttonA = dataView.getUint8(4);
+            this._sensors.buttonB = dataView.getUint8(5);
+    
+            this._sensors.touchPins[0] = dataView.getUint8(6);
+            this._sensors.touchPins[1] = dataView.getUint8(7);
+            this._sensors.touchPins[2] = dataView.getUint8(8);
+    
+            this._sensors.gestureState = dataView.getUint8(9);
+        }
+
+        switch (dataView.getUint8(19)) {
+        case MBitMoreDataFormat.MIX_01: {
             this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(10, true);
             this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(12, true);
             this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(14, true);
             this._sensors.compassHeading = dataView.getUint16(16, true);
             this._sensors.lightLevel = dataView.getUint8(18);
+            break;
         }
-        if (data[19] === 0x02) {
+        case MBitMoreDataFormat.MIX_02: {
             this._sensors.sharedData[0] = dataView.getInt16(10, true);
             this._sensors.sharedData[1] = dataView.getInt16(12, true);
             this._sensors.sharedData[2] = dataView.getInt16(14, true);
@@ -469,20 +537,62 @@ class MbitMore {
             for (let i = 0; i < this.gpio.length; i++) {
                 this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
             }
+            break;
         }
-        if (data[19] === 0x03) {
+        case MBitMoreDataFormat.MIX_03: {
             this._sensors.magneticStrength = dataView.getUint16(10, true);
             this._sensors.accelerationX = dataView.getInt16(12, true);
             this._sensors.accelerationY = dataView.getInt16(14, true);
             this._sensors.accelerationZ = dataView.getInt16(16, true);
+            break;
         }
+        case MBitMoreDataFormat.IO: {
+            const gpioData = dataView.getUint8(0);
+            for (let i = 0; i < this.gpio.length; i++) {
+                this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
+            }
+            break;
+        }
+        case MBitMoreDataFormat.ANSLOG_IN: {
+            this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(0, true);
+            this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(2, true);
+            this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(4, true);
+            break;
+        }
+        case MBitMoreDataFormat.LIGHT_SENSOR: {
+            this._sensors.lightLevel = dataView.getUint8(0);
+            break;
+        }
+        case MBitMoreDataFormat.ACCELEROMETER: {
+            this._sensors.accelerationX = dataView.getInt16(0, true);
+            this._sensors.accelerationY = dataView.getInt16(2, true);
+            this._sensors.accelerationZ = dataView.getInt16(4, true);
+            break;
+        }
+        case MBitMoreDataFormat.MAGNETOMETER: {
+            this._sensors.compassHeading = dataView.getUint16(0, true);
+            this._sensors.magneticStrength = dataView.getUint16(2, true);
+            break;
+        }
+        case MBitMoreDataFormat.SHARED_DATA: {
+            this._sensors.sharedData[0] = dataView.getInt16(0, true);
+            this._sensors.sharedData[1] = dataView.getInt16(2, true);
+            this._sensors.sharedData[2] = dataView.getInt16(4, true);
+            this._sensors.sharedData[3] = dataView.getInt16(6, true);
+            break;
+        }
+        default:
+            break;
+        }
+        this.resetDisconnectTimeout();
+    }
 
-        // cancel disconnect timeout and start a new one
+    /**
+     * Cancel disconnect timeout and start counting again.
+     */
+    resetDisconnectTimeout () {
         window.clearTimeout(this._timeoutID);
-        this._timeoutID = window.setTimeout(
-            () => this._ble.handleDisconnectError(BLEDataStoppedError),
-            BLETimeout
-        );
+        this._timeoutID = window.setTimeout(() => this._ble.handleDisconnectError(BLEDataStoppedError), BLETimeout);
     }
 
     /**
@@ -497,13 +607,33 @@ class MbitMore {
         return this._sensors.touchPins[pin];
     }
 
+
     /**
      * Return the analog value of the pin.
      * @param {number} pin - the pin to check.
-     * @return {number} - the latest value received for the analog pins.
+     * @return {Promise} - Promise to get the latest value of analog input.
      */
     getAnalogValue (pin) {
-        return this._sensors.analogValue[pin];
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.analogValue[pin]);
+        }
+        return new Promise(resolve => {
+            this._ble.read(
+                MBITMORE_SERVICE.ID,
+                MBITMORE_SERVICE.ANSLOG_IN,
+                false)
+                .then(result => {
+                    const data = Base64Util.base64ToUint8Array(result.message);
+                    const dataView = new DataView(data.buffer, 0);
+                    this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(0, true);
+                    this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(2, true);
+                    this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(4, true);
+                    resolve(this._sensors.analogValue[pin]);
+                });
+        });
     }
 
     /**
