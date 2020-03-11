@@ -136,6 +136,7 @@ class MbitMore {
             ledMatrixState: new Uint8Array(5),
             lightLevel: 0,
             compassHeading: 0,
+            magneticForce: {},
             analogValue: {},
             digitalValue: {},
             sharedData: [0, 0, 0, 0]
@@ -200,6 +201,12 @@ class MbitMore {
         this._onConnect = this._onConnect.bind(this);
         this._updateMicrobitService = this._updateMicrobitService.bind(this);
         this._useMbitMoreService = true;
+
+        this.ioUpdateInterval = 50; // milli-seconds
+        this.analogInUpdateInterval = 50; // milli-seconds
+        this.lightSensorUpdateInterval = 50; // milli-seconds
+        this.accelerometerUpdateInterval = 50; // milli-seconds
+        this.magnetometerUpdateInterval = 50; // milli-seconds
     }
 
     /**
@@ -301,24 +308,251 @@ class MbitMore {
     }
 
     /**
-     * @return {number} - the latest value received for the amount of light falling on the LEDs.
+     * Update data of the analog input.
+     * @return {Promise} - a Promise that resolves sensors which updated data of the analog input.
      */
-    get lightLevel () {
-        return this._sensors.lightLevel;
+    updateAnalogIn () {
+        return this._ble.read(
+            MBITMORE_SERVICE.ID,
+            MBITMORE_SERVICE.ANSLOG_IN,
+            false)
+            .then(result => {
+                const data = Base64Util.base64ToUint8Array(result.message);
+                const dataView = new DataView(data.buffer, 0);
+                this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(0, true);
+                this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(2, true);
+                this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(4, true);
+                this.analogInLastUpdated = Date.now();
+                return this._sensors;
+            });
     }
 
     /**
-     * @return {number} - the angle (degrees) of heading direction from the north.
+     * Read analog input from the pin [0, 1, 2].
+     * @param {number} pin - the pin to read.
+     * @return {Promise} - a Promise that resolves analog input value of the pin.
      */
-    get compassHeading () {
-        return this._sensors.compassHeading;
+    readAnalogIn (pin) {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.analogValue[pin]);
+        }
+        if ((Date.now() - this.analogInLastUpdated) < this.analogInUpdateInterval) {
+            return Promise.resolve(this._sensors.analogValue[pin]);
+        }
+        return this.updateAnalogIn()
+            .then(() => this._sensors.analogValue[pin]);
     }
 
     /**
-     * @return {number} - the value of magnetic field strength [nano tesla].
+     * Update data of the light sensor.
+     * @return {Promise} - a Promise that resolves sensors which updated data of the light sensor.
      */
-    get magneticStrength () {
-        return this._sensors.magneticStrength;
+    updateLightSensor () {
+        if ((Date.now() - this.lightSensorLastUpdated) < this.lightSensorUpdateInterval) {
+            return Promise.resolve(this._sensors);
+        }
+        return this._ble.read(
+            MBITMORE_SERVICE.ID,
+            MBITMORE_SERVICE.LIGHT_SENSOR,
+            false)
+            .then(result => {
+                const data = Base64Util.base64ToUint8Array(result.message);
+                const dataView = new DataView(data.buffer, 0);
+                this._sensors.lightLevel = dataView.getUint8(0);
+                this.lightSensorLastUpdated = Date.now();
+                return this._sensors;
+            });
+    }
+
+    /**
+     * Read light level from the light sensor.
+     * @return {Promise} - a Promise that resolves light level.
+     */
+    readLightLevel () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.lightLevel);
+        }
+        return this.updateLightSensor()
+            .then(() => this._sensors.lightLevel);
+    }
+
+    /**
+     * Update data of the magnetometer.
+     * @return {Promise} - a Promise that resolves sensors which updated data of the magnetometer.
+     */
+    updateMagnetometer () {
+        if ((Date.now() - this.magnetometerLastUpdated) < this.magnetometerUpdateInterval) {
+            return Promise.resolve(this._sensors);
+        }
+        return this._ble.read(
+            MBITMORE_SERVICE.ID,
+            MBITMORE_SERVICE.MAGNETOMETER,
+            false)
+            .then(result => {
+                const data = Base64Util.base64ToUint8Array(result.message);
+                const dataView = new DataView(data.buffer, 0);
+                this._sensors.compassHeading = dataView.getUint16(0, true);
+                this._sensors.magneticForce[0] = dataView.getInt16(2, true);
+                this._sensors.magneticForce[1] = dataView.getInt16(4, true);
+                this._sensors.magneticForce[2] = dataView.getInt16(6, true);
+                this._sensors.magneticStrength = Math.round(
+                    Math.sqrt(
+                        (this._sensors.magneticForce[0] ** 2) +
+                        (this._sensors.magneticForce[1] ** 2) +
+                        (this._sensors.magneticForce[2] ** 2)
+                    )
+                );
+                this.magnetometerLastUpdated = Date.now();
+                return this._sensors;
+            });
+    }
+
+    /**
+     * Read the angle (degrees) of heading direction from the north.
+     * @return {Promise} - a Promise that resolves compass heading.
+     */
+    readCompassHeading () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.compassHeading);
+        }
+        return this.updateMagnetometer()
+            .then(() => this._sensors.compassHeading);
+    }
+
+    /**
+     * Read magnetic field X [micro teslas].
+     * @return {Promise} - a Promise that resolves magnetic field strength.
+     */
+    readMagneticForceX () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.magneticForce[0]);
+        }
+        return this.updateMagnetometer()
+            .then(() => this._sensors.magneticForce[0]);
+    }
+
+    /**
+     * Read magnetic field Y [micro teslas].
+     * @return {Promise} - a Promise that resolves magnetic field strength.
+     */
+    readMagneticForceY () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.magneticForce[1]);
+        }
+        return this.updateMagnetometer()
+            .then(() => this._sensors.magneticForce[2]);
+    }
+
+    /**
+     * Read magnetic field X [micro teslas].
+     * @return {Promise} - a Promise that resolves magnetic field strength.
+     */
+    readMagneticForceZ () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.magneticForce[2]);
+        }
+        return this.updateMagnetometer()
+            .then(() => this._sensors.magneticForce[2]);
+    }
+
+    /**
+     * Read magnetic field strength [micro teslas].
+     * @return {Promise} - a Promise that resolves magnetic field strength.
+     */
+    readMagneticStrength () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.magneticStrength);
+        }
+        return this.updateMagnetometer()
+            .then(() => this._sensors.magneticStrength);
+    }
+
+    /**
+     * Update data of the accelerometer.
+     * @return {Promise} - a Promise that resolves sensors which updated data of the magnetometer.
+     */
+    updateAccelerometer () {
+        if ((Date.now() - this.accelerometerLastUpdated) < this.accelerometerUpdateInterval) {
+            return Promise.resolve(this._sensors);
+        }
+        return this._ble.read(
+            MBITMORE_SERVICE.ID,
+            MBITMORE_SERVICE.ACCELEROMETER,
+            false)
+            .then(result => {
+                const data = Base64Util.base64ToUint8Array(result.message);
+                const dataView = new DataView(data.buffer, 0);
+                this._sensors.accelerationX = dataView.getInt16(0, true);
+                this._sensors.accelerationY = dataView.getInt16(2, true);
+                this._sensors.accelerationZ = dataView.getInt16(4, true);
+                return this._sensors;
+            });
+    }
+
+    /**
+     * Read the value of gravitational acceleration [milli-g] for X axis.
+     * @return {Promise} - a Promise that resolves acceleration.
+     */
+    readAccelerationX () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(1000 * this._sensors.accelerationX / G);
+        }
+        return this.updateAccelerometer()
+            .then(() => (1000 * this._sensors.accelerationX / G));
+    }
+
+    /**
+     * Read the value of gravitational acceleration [milli-g] for Y axis.
+     * @return {Promise} - a Promise that resolves acceleration.
+     */
+    readAccelerationY () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(1000 * this._sensors.accelerationY / G);
+        }
+        return this.updateAccelerometer()
+            .then(() => (1000 * this._sensors.accelerationY / G));
+    }
+
+    /**
+     * Read the value of gravitational acceleration [milli-g] for Z axis.
+     * @return {Promise} - a Promise that resolves acceleration.
+     */
+    readAccelerationZ () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(1000 * this._sensors.accelerationZ / G);
+        }
+        return this.updateAccelerometer()
+            .then(() => (1000 * this._sensors.accelerationZ / G));
     }
 
     /**
@@ -463,21 +697,6 @@ class MbitMore {
                     this._ble.write(MBITMORE_SERVICE.ID, MBITMORE_SERVICE.CONFIG, config, 'base64', false);
                     this._ble.startNotifications(
                         MBITMORE_SERVICE.ID,
-                        MBITMORE_SERVICE.IO,
-                        this._updateMicrobitService);
-                    this._ble.startNotifications(
-                        MBITMORE_SERVICE.ID,
-                        MBITMORE_SERVICE.LIGHT_SENSOR,
-                        this._updateMicrobitService);
-                    this._ble.startNotifications(
-                        MBITMORE_SERVICE.ID,
-                        MBITMORE_SERVICE.ACCELEROMETER,
-                        this._updateMicrobitService);
-                    this._ble.startNotifications(MBITMORE_SERVICE.ID,
-                        MBITMORE_SERVICE.MAGNETOMETER,
-                        this._updateMicrobitService);
-                    this._ble.startNotifications(
-                        MBITMORE_SERVICE.ID,
                         MBITMORE_SERVICE.SHARED_DATA,
                         this._updateMicrobitService);
                 }
@@ -602,11 +821,39 @@ class MbitMore {
      */
     _checkPinState (pin) {
         if (pin > 2) {
-            return this._sensors.digitalValue[pin];
+            return this.getDititalValue(pin);
         }
         return this._sensors.touchPins[pin];
     }
 
+    /**
+     * Return the digital value of the pin.
+     * @param {number} pin - the pin to check.
+     * @return {Promise} - Promise to get the latest value of digital input.
+     */
+    getDititalValue (pin) {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.digitalValue[pin]);
+        }
+        return new Promise(resolve => {
+            this._ble.read(
+                MBITMORE_SERVICE.ID,
+                MBITMORE_SERVICE.IO,
+                false)
+                .then(result => {
+                    const data = Base64Util.base64ToUint8Array(result.message);
+                    const dataView = new DataView(data.buffer, 0);
+                    const gpioData = dataView.getUint8(0);
+                    for (let i = 0; i < this.gpio.length; i++) {
+                        this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
+                    }
+                    resolve(this._sensors.digitalValue[pin]);
+                });
+        });
+    }
 
     /**
      * Return the analog value of the pin.
@@ -1581,31 +1828,31 @@ class MbitMoreBlocks {
     }
 
     /**
-     * Return amount of light on the LEDs.
-     * @return {number} - the level of light amount (0 - 255).
+     * Get amount of light (0 - 255) on the LEDs.
+     * @return {Promise} - a Promise that resolves light level.
      */
     getLightLevel () {
-        return this._peripheral.lightLevel;
+        return this._peripheral.readLightLevel();
     }
 
     /**
      * Return angle from the north to the micro:bit heading direction.
-     * @return {number} - the angle from the north (0 - 355 degrees).
+     * @return {Promise} - a Promise that resolves compass heading angle from the north (0 - 359 degrees).
      */
     getCompassHeading () {
-        return this._peripheral.compassHeading;
+        return this._peripheral.readCompassHeading();
     }
 
     /**
      * Return analog value of the pin.
      * @param {object} args - the block's arguments.
-     * @return {number} - analog value of the pin.
+     * @return {Promise} - a Promise that resolves analog input value of the pin.
      */
     getAnalogValue (args) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return 0;
         if (pin < 0 || pin > 2) return 0;
-        return this._peripheral.getAnalogValue(pin);
+        return this._peripheral.readAnalogIn(pin);
     }
 
     /**
@@ -1709,26 +1956,26 @@ class MbitMoreBlocks {
 
     /**
      * Return the value of magnetic field strength.
-     * @return {number} - the value of magnetic field strength [nano tesla].
+     * @return {Promise} -  a Promise that resolves magnetic field strength [micro tesla].
      */
     getMagneticStrength () {
-        return this._peripheral.magneticStrength;
+        return this._peripheral.readMagneticStrength();
     }
 
     /**
      * Return the value of acceleration on the specified axis.
      * @param {object} args - the block's arguments.
      * @property {AxisValues} AXIS - the axis (X, Y, Z).
-     * @return {number} - the value of acceleration on the axis [milli-g].
+     * @return {Promise} - a Promise that resolves acceleration on the axis [milli-g].
      */
     getAcceleration (args) {
         switch (args.AXIS) {
         case AxisValues.X:
-            return this._peripheral.accelerationX;
+            return this._peripheral.readAccelerationX();
         case AxisValues.Y:
-            return this._peripheral.accelerationY;
+            return this._peripheral.readAccelerationY();
         case AxisValues.Z:
-            return this._peripheral.accelerationZ;
+            return this._peripheral.readAccelerationZ();
         default:
             log.warn(`Unknown axis in getAcceleration: ${args.AXIS}`);
         }
