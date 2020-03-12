@@ -202,7 +202,9 @@ class MbitMore {
         this._updateMicrobitService = this._updateMicrobitService.bind(this);
         this._useMbitMoreService = true;
 
-        this.ioUpdateInterval = 50; // milli-seconds
+        this.digitalValuesUpdateInterval = 50; // milli-seconds
+        this.digitalValuesLastUpdated = Date.now();
+
         this.analogInUpdateInterval = 50; // milli-seconds
         this.lightSensorUpdateInterval = 50; // milli-seconds
         this.accelerometerUpdateInterval = 50; // milli-seconds
@@ -823,38 +825,40 @@ class MbitMore {
      */
     _checkPinState (pin) {
         if (pin > 2) {
-            return this.getDititalValue(pin);
+            if (!this._useMbitMoreService) {
+                return this._sensors.digitalValue[pin];
+            }
+            if ((Date.now() - this.digitalValuesLastUpdated) > this.digitalValuesUpdateInterval) {
+                // Update for next check.
+                this.updateDigitalValue().then();
+                this.digitalValuesLastUpdated = Date.now();
+                return this._sensors.digitalValue[pin];
+            } else {
+                return this._sensors.digitalValue[pin];
+            }
         }
         return this._sensors.touchPins[pin];
     }
 
     /**
-     * Return the digital value of the pin.
-     * @param {number} pin - the pin to check.
-     * @return {Promise} - Promise to get the latest value of digital input.
+     * Update data of the digital input state.
+     * @return {Promise} - Promise that resolves sensors which updated data of the ditital input state.
      */
-    getDititalValue (pin) {
-        if (!this.isConnected()) {
-            return Promise.resolve(0);
-        }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.digitalValue[pin]);
-        }
-        return new Promise(resolve => {
-            this._ble.read(
-                MBITMORE_SERVICE.ID,
-                MBITMORE_SERVICE.IO,
-                false)
-                .then(result => {
-                    const data = Base64Util.base64ToUint8Array(result.message);
-                    const dataView = new DataView(data.buffer, 0);
-                    const gpioData = dataView.getUint8(0);
-                    for (let i = 0; i < this.gpio.length; i++) {
-                        this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
-                    }
-                    resolve(this._sensors.digitalValue[pin]);
-                });
-        });
+    updateDigitalValue () {
+        return this._ble.read(
+            MBITMORE_SERVICE.ID,
+            MBITMORE_SERVICE.IO,
+            false)
+            .then(result => {
+                const data = Base64Util.base64ToUint8Array(result.message);
+                const dataView = new DataView(data.buffer, 0);
+                const gpioData = dataView.getUint32(0, true);
+                for (let i = 0; i < this.gpio.length; i++) {
+                    this._sensors.digitalValue[this.gpio[i]] = (gpioData >> this.gpio[i]) & 1;
+                }
+                this.digitalValuesLastUpdated = Date.now();
+                return this._sensors;
+            });
     }
 
     /**
