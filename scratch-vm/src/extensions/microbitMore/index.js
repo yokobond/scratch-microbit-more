@@ -312,6 +312,9 @@ class MbitMore {
      * @return {Promise} - a Promise that resolves sensors which updated data of the analog input.
      */
     updateAnalogIn () {
+        if ((Date.now() - this.analogInLastUpdated) < this.analogInUpdateInterval) {
+            return Promise.resolve(this._sensors);
+        }
         return this._ble.read(
             MBITMORE_SERVICE.ID,
             MBITMORE_SERVICE.ANSLOG_IN,
@@ -337,9 +340,6 @@ class MbitMore {
             return Promise.resolve(0);
         }
         if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.analogValue[pin]);
-        }
-        if ((Date.now() - this.analogInLastUpdated) < this.analogInUpdateInterval) {
             return Promise.resolve(this._sensors.analogValue[pin]);
         }
         return this.updateAnalogIn()
