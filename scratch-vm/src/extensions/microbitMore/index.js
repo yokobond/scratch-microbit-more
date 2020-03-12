@@ -506,6 +506,7 @@ class MbitMore {
                 this._sensors.accelerationX = dataView.getInt16(0, true);
                 this._sensors.accelerationY = dataView.getInt16(2, true);
                 this._sensors.accelerationZ = dataView.getInt16(4, true);
+                this.accelerometerLastUpdated = Date.now();
                 return this._sensors;
             });
     }
