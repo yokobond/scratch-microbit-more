@@ -206,9 +206,16 @@ class MbitMore {
         this.digitalValuesLastUpdated = Date.now();
 
         this.analogInUpdateInterval = 50; // milli-seconds
+        this.analogInLastUpdated = Date.now();
+
         this.lightSensorUpdateInterval = 50; // milli-seconds
+        this.lightSensorLastUpdated = Date.now();
+
         this.accelerometerUpdateInterval = 50; // milli-seconds
+        this.accelerometerLastUpdated = Date.now();
+
         this.magnetometerUpdateInterval = 50; // milli-seconds
+        this.magnetometerLastUpdated = Date.now();
     }
 
     /**
