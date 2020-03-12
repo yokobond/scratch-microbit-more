@@ -506,6 +506,13 @@ class MbitMore {
                 this._sensors.accelerationX = dataView.getInt16(0, true);
                 this._sensors.accelerationY = dataView.getInt16(2, true);
                 this._sensors.accelerationZ = dataView.getInt16(4, true);
+                this._sensors.accelerationStrength = Math.round(
+                    Math.sqrt(
+                        (this._sensors.accelerationX ** 2) +
+                        (this._sensors.accelerationY ** 2) +
+                        (this._sensors.accelerationZ ** 2)
+                    )
+                );
                 this.accelerometerLastUpdated = Date.now();
                 return this._sensors;
             });
@@ -557,7 +564,18 @@ class MbitMore {
     }
 
     /**
+     * Read magnetic field strength [micro teslas].
+     * @return {Promise} - a Promise that resolves magnetic field strength.
      */
+    readAccelerationStrength () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(1000 * this._sensors.accelerationStrength / G);
+        }
+        return this.updateAccelerometer()
+            .then(() => 1000 * this._sensors.accelerationStrength / G);
     }
 
     /**
@@ -948,7 +966,8 @@ const DigitalValue = {
 const AxisValues = {
     X: 'x',
     Y: 'y',
-    Z: 'z'
+    Z: 'z',
+    Absolute: 'absolute'
 };
 
 /**
@@ -1175,6 +1194,14 @@ class MbitMoreBlocks {
                     description: 'label of Z axis.'
                 }),
                 value: AxisValues.Z
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.axisMenu.absolute',
+                    default: 'absolute',
+                    description: 'label of absolute value.'
+                }),
+                value: AxisValues.Absolute
             }
         ];
     }
@@ -1975,6 +2002,9 @@ class MbitMoreBlocks {
         case AxisValues.Z:
         case this.AXIS_MENU.find(item => (item.value === AxisValues.Z)).text:
             return this._peripheral.readAccelerationZ();
+        case AxisValues.Absolute:
+        case this.AXIS_MENU.find(item => (item.value === AxisValues.Absolute)).text:
+            return this._peripheral.readAccelerationStrength();
         default:
             log.warn(`Unknown axis in getAcceleration: ${args.AXIS}`);
         }
