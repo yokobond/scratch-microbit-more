@@ -557,24 +557,7 @@ class MbitMore {
     }
 
     /**
-     * @return {number} - the value of gravitational acceleration [milli-g] for the X axis.
      */
-    get accelerationX () {
-        return 1000 * this._sensors.accelerationX / G;
-    }
-
-    /**
-     * @return {number} - the value of acceleration [milli-g] for the Y axis.
-     */
-    get accelerationY () {
-        return 1000 * this._sensors.accelerationY / G;
-    }
-
-    /**
-     * @return {number} - the value of acceleration [milli-g] for the Z axis.
-     */
-    get accelerationZ () {
-        return 1000 * this._sensors.accelerationZ / G;
     }
 
     /**
