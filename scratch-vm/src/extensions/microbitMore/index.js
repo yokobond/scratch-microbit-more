@@ -1169,15 +1169,27 @@ class MbitMoreBlocks {
     get AXIS_MENU () {
         return [
             {
-                text: 'x',
+                text: formatMessage({
+                    id: 'mbitMore.axisMenu.x',
+                    default: 'x',
+                    description: 'label of X axis.'
+                }),
                 value: AxisValues.X
             },
             {
-                text: 'y',
+                text: formatMessage({
+                    id: 'mbitMore.axisMenu.y',
+                    default: 'y',
+                    description: 'label of Y axis.'
+                }),
                 value: AxisValues.Y
             },
             {
-                text: 'z',
+                text: formatMessage({
+                    id: 'mbitMore.axisMenu.z',
+                    default: 'z',
+                    description: 'label of Z axis.'
+                }),
                 value: AxisValues.Z
             }
         ];
@@ -1971,10 +1983,13 @@ class MbitMoreBlocks {
     getAcceleration (args) {
         switch (args.AXIS) {
         case AxisValues.X:
+        case this.AXIS_MENU.find(item => (item.value === AxisValues.X)).text:
             return this._peripheral.readAccelerationX();
         case AxisValues.Y:
+        case this.AXIS_MENU.find(item => (item.value === AxisValues.Y)).text:
             return this._peripheral.readAccelerationY();
         case AxisValues.Z:
+        case this.AXIS_MENU.find(item => (item.value === AxisValues.Z)).text:
             return this._peripheral.readAccelerationZ();
         default:
             log.warn(`Unknown axis in getAcceleration: ${args.AXIS}`);
@@ -1998,7 +2013,10 @@ class MbitMoreBlocks {
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
                 'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] 度にする',
                 'mbitMore.digitalValueMenu.Low': 'Low',
-                'mbitMore.digitalValueMenu.High': 'High'
+                'mbitMore.digitalValueMenu.High': 'High',
+                'mbitMore.axisMenu.x': 'x',
+                'mbitMore.axisMenu.y': 'y',
+                'mbitMore.axisMenu.z': 'z',
             },
             'ja-Hira': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
@@ -2014,7 +2032,10 @@ class MbitMoreBlocks {
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
                 'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
                 'mbitMore.digitalValueMenu.Low': 'ロー',
-                'mbitMore.digitalValueMenu.High': 'ハイ'
+                'mbitMore.digitalValueMenu.High': 'ハイ',
+                'mbitMore.axisMenu.x': 'x',
+                'mbitMore.axisMenu.y': 'y',
+                'mbitMore.axisMenu.z': 'z',
             },
             'pt-br': {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
