@@ -1434,13 +1434,24 @@ class MbitMoreBlocks {
                     blockType: BlockType.REPORTER
                 },
                 {
-                    opcode: 'getMagneticStrength',
+                    opcode: 'getMagneticForce',
                     text: formatMessage({
                         id: 'mbitMore.magneticForce',
                         default: 'magnetic force',
-                        description: 'value of magnetic field strength (nano tesla)'
+                        description: 'value of magnetic force (micro tesla)'
                     }),
-                    blockType: BlockType.REPORTER
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        AXIS: {
+                            type: ArgumentType.STRING,
+                            menu: 'axis',
+                            defaultValue: formatMessage({
+                                id: 'mbitMore.axisMenu.absolute',
+                                default: 'absolute',
+                                description: 'label of absolute value.'
+                            })
+                        }
+                    }
                 },
                 {
                     opcode: 'getAcceleration',
@@ -1978,11 +1989,28 @@ class MbitMoreBlocks {
     }
 
     /**
-     * Return the value of magnetic field strength.
-     * @return {Promise} -  a Promise that resolves magnetic field strength [micro tesla].
+     * Return the value of magnetic force [micro tesla] on axis.
+     * @param {object} args - the block's arguments.
+     * @property {AxisValues} AXIS - the axis (X, Y, Z, Absolute).
+     * @return {Promise} -  a Promise that resolves value of magnetic force.
      */
-    getMagneticStrength () {
-        return this._peripheral.readMagneticStrength();
+    getMagneticForce (args) {
+        switch (args.AXIS) {
+        case AxisValues.X:
+        case this.AXIS_MENU.find(item => (item.value === AxisValues.X)).text:
+            return this._peripheral.readMagneticForceX();
+        case AxisValues.Y:
+        case this.AXIS_MENU.find(item => (item.value === AxisValues.Y)).text:
+            return this._peripheral.readMagneticForceY();
+        case AxisValues.Z:
+        case this.AXIS_MENU.find(item => (item.value === AxisValues.Z)).text:
+            return this._peripheral.readMagneticForceZ();
+        case AxisValues.Absolute:
+        case this.AXIS_MENU.find(item => (item.value === AxisValues.Absolute)).text:
+            return this._peripheral.readMagneticStrength();
+        default:
+            log.warn(`Unknown axis in getMagneticForce: ${args.AXIS}`);
+        }
     }
 
     /**
@@ -2017,7 +2045,7 @@ class MbitMoreBlocks {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
                 'mbitMore.lightLevel': '明るさ',
                 'mbitMore.compassHeading': '北からの角度',
-                'mbitMore.magneticForce': '磁力',
+                'mbitMore.magneticForce': '磁力 [AXIS]',
                 'mbitMore.acceleration': '加速度 [AXIS]',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
                 'mbitMore.getSharedData': '共有データ [INDEX]',
@@ -2031,12 +2059,13 @@ class MbitMoreBlocks {
                 'mbitMore.axisMenu.x': 'x',
                 'mbitMore.axisMenu.y': 'y',
                 'mbitMore.axisMenu.z': 'z',
+                'mbitMore.axisMenu.absolute': '大きさ'
             },
             'ja-Hira': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
                 'mbitMore.lightLevel': 'あかるさ',
                 'mbitMore.compassHeading': 'きたからのかくど',
-                'mbitMore.magneticForce': 'じりょく',
+                'mbitMore.magneticForce': 'じりょく [AXIS]',
                 'mbitMore.acceleration': 'かそくど [AXIS]',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
                 'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
@@ -2050,12 +2079,13 @@ class MbitMoreBlocks {
                 'mbitMore.axisMenu.x': 'x',
                 'mbitMore.axisMenu.y': 'y',
                 'mbitMore.axisMenu.z': 'z',
+                'mbitMore.axisMenu.absolute': 'おおきさ'
             },
             'pt-br': {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
                 'mbitMore.lightLevel': 'Intensidade da Luz',
                 'mbitMore.compassHeading': 'Está em direção ao Norte',
-                'mbitMore.magneticForce': 'Força Magnética',
+                'mbitMore.magneticForce': 'Força Magnética [AXIS]',
                 'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
                 'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
                 'mbitMore.getSharedData': 'Dados compartilhados [INDEX]',
@@ -2071,7 +2101,7 @@ class MbitMoreBlocks {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
                 'mbitMore.lightLevel': 'Intensidade da Luz',
                 'mbitMore.compassHeading': 'Está em direção ao Norte',
-                'mbitMore.magneticForce': 'Força Magnética',
+                'mbitMore.magneticForce': 'Força Magnética [AXIS]',
                 'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
                 'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
                 'mbitMore.getSharedData': 'Dados compartilhados [INDEX]',
