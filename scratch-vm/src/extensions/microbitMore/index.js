@@ -873,20 +873,18 @@ class MbitMore {
         if (!this._useMbitMoreService) {
             return Promise.resolve(this._sensors.analogValue[pin]);
         }
-        return new Promise(resolve => {
-            this._ble.read(
-                MBITMORE_SERVICE.ID,
-                MBITMORE_SERVICE.ANSLOG_IN,
-                false)
-                .then(result => {
-                    const data = Base64Util.base64ToUint8Array(result.message);
-                    const dataView = new DataView(data.buffer, 0);
-                    this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(0, true);
-                    this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(2, true);
-                    this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(4, true);
-                    resolve(this._sensors.analogValue[pin]);
-                });
-        });
+        return this._ble.read(
+            MBITMORE_SERVICE.ID,
+            MBITMORE_SERVICE.ANSLOG_IN,
+            false)
+            .then(result => {
+                const data = Base64Util.base64ToUint8Array(result.message);
+                const dataView = new DataView(data.buffer, 0);
+                this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(0, true);
+                this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(2, true);
+                this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(4, true);
+                return this._sensors.analogValue[pin];
+            });
     }
 
     /**
