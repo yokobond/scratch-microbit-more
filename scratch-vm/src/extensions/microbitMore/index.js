@@ -27,7 +27,8 @@ const BLECommand = {
     CMD_PIN_OUTPUT: 0x91,
     CMD_PIN_PWM: 0x92,
     CMD_PIN_SERVO: 0x93,
-    CMD_SHARED_DATA_SET: 0xA0
+    CMD_SHARED_DATA_SET: 0x94,
+    CMD_PROTOCOL_SET: 0xA0
 };
 
 const MBitMoreDataFormat = {
@@ -629,8 +630,7 @@ class MbitMore {
                     element => element.toLowerCase().indexOf(MBITMORE_SERVICE.ID) !== -1) !== 'undefined';
                 if (this._useMbitMoreService) {
                     // Microbit More service is available.
-                    const config = Base64Util.uint8ArrayToBase64(Uint8Array.of(1)); // protocol ver.1.
-                    this._ble.write(MBITMORE_SERVICE.ID, MBITMORE_SERVICE.CONFIG, config, 'base64', false);
+                    this.send(BLECommand.CMD_PROTOCOL_SET, new Uint8Array([1])); // Set protocol ver.1.
                     this._ble.startNotifications(
                         MBITMORE_SERVICE.ID,
                         MBITMORE_SERVICE.SHARED_DATA,
