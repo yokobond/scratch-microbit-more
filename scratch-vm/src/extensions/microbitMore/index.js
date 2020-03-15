@@ -840,9 +840,9 @@ class MbitMore {
                 this.updateDigitalValue().then();
                 this.digitalValuesLastUpdated = Date.now();
                 return this._sensors.digitalValue[pin];
-            } else {
-                return this._sensors.digitalValue[pin];
             }
+            return this._sensors.digitalValue[pin];
+            
         }
         return this._sensors.touchPins[pin];
     }
