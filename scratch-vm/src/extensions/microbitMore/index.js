@@ -34,12 +34,7 @@ const MBitMoreDataFormat = {
     MIX_01: 0x01,
     MIX_02: 0x02,
     MIX_03: 0x03,
-    IO: 0x11,
-    ANSLOG_IN: 0x12,
-    LIGHT_SENSOR: 0x13,
-    ACCELEROMETER: 0x14,
-    MAGNETOMETER: 0x15,
-    SHARED_DATA: 0x16
+    SHARED_DATA: 0x11
 };
 
 /**
@@ -77,10 +72,8 @@ const MBITMORE_SERVICE = {
     CONFIG: 'a62d0001-1b34-4092-8dee-4151f63b2865',
     IO: 'a62d0002-1b34-4092-8dee-4151f63b2865',
     ANSLOG_IN: 'a62d0003-1b34-4092-8dee-4151f63b2865',
-    LIGHT_SENSOR: 'a62d0004-1b34-4092-8dee-4151f63b2865',
-    ACCELEROMETER: 'a62d0005-1b34-4092-8dee-4151f63b2865',
-    MAGNETOMETER: 'a62d0006-1b34-4092-8dee-4151f63b2865',
-    SHARED_DATA: 'a62d0007-1b34-4092-8dee-4151f63b2865'
+    SENSORS: 'a62d0004-1b34-4092-8dee-4151f63b2865',
+    SHARED_DATA: 'a62d0010-1b34-4092-8dee-4151f63b2865'
 };
 
 /**
@@ -208,14 +201,8 @@ class MbitMore {
         this.analogInUpdateInterval = 50; // milli-seconds
         this.analogInLastUpdated = Date.now();
 
-        this.lightSensorUpdateInterval = 50; // milli-seconds
-        this.lightSensorLastUpdated = Date.now();
-
-        this.accelerometerUpdateInterval = 50; // milli-seconds
-        this.accelerometerLastUpdated = Date.now();
-
-        this.magnetometerUpdateInterval = 50; // milli-seconds
-        this.magnetometerLastUpdated = Date.now();
+        this.sensorsUpdateInterval = 50; // milli-seconds
+        this.sensorsLastUpdated = Date.now();
     }
 
     /**
@@ -356,22 +343,51 @@ class MbitMore {
     }
 
     /**
-     * Update data of the light sensor.
-     * @return {Promise} - a Promise that resolves sensors which updated data of the light sensor.
+     * Update data of all sensors.
+     * @return {Promise} - a Promise that resolves sensors which updated data of all sensor.
      */
-    updateLightSensor () {
-        if ((Date.now() - this.lightSensorLastUpdated) < this.lightSensorUpdateInterval) {
+    updateSensors () {
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors);
+        }
+        if ((Date.now() - this.sensorsLastUpdated) < this.sensorsUpdateInterval) {
             return Promise.resolve(this._sensors);
         }
         return this._ble.read(
             MBITMORE_SERVICE.ID,
-            MBITMORE_SERVICE.LIGHT_SENSOR,
+            MBITMORE_SERVICE.SENSORS,
             false)
             .then(result => {
                 const data = Base64Util.base64ToUint8Array(result.message);
                 const dataView = new DataView(data.buffer, 0);
-                this._sensors.lightLevel = dataView.getUint8(0);
-                this.lightSensorLastUpdated = Date.now();
+                // Accelerometer
+                this._sensors.accelerationX = dataView.getInt16(0, true);
+                this._sensors.accelerationY = dataView.getInt16(2, true);
+                this._sensors.accelerationZ = dataView.getInt16(4, true);
+                this._sensors.accelerationStrength = Math.round(
+                    Math.sqrt(
+                        (this._sensors.accelerationX ** 2) +
+                        (this._sensors.accelerationY ** 2) +
+                        (this._sensors.accelerationZ ** 2)
+                    )
+                );
+                this._sensors.pitch = dataView.getInt16(6, true);
+                this._sensors.roll = dataView.getInt16(8, true);
+                // Magnetometer
+                this._sensors.compassHeading = dataView.getUint16(10, true);
+                this._sensors.magneticForce[0] = dataView.getInt16(12, true);
+                this._sensors.magneticForce[1] = dataView.getInt16(14, true);
+                this._sensors.magneticForce[2] = dataView.getInt16(16, true);
+                this._sensors.magneticStrength = Math.round(
+                    Math.sqrt(
+                        (this._sensors.magneticForce[0] ** 2) +
+                        (this._sensors.magneticForce[1] ** 2) +
+                        (this._sensors.magneticForce[2] ** 2)
+                    )
+                );
+                // Light sensor
+                this._sensors.lightLevel = dataView.getUint8(18);
+                this.sensorsLastUpdated = Date.now();
                 return this._sensors;
             });
     }
@@ -384,42 +400,8 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.lightLevel);
-        }
-        return this.updateLightSensor()
+        return this.updateSensors()
             .then(() => this._sensors.lightLevel);
-    }
-
-    /**
-     * Update data of the magnetometer.
-     * @return {Promise} - a Promise that resolves sensors which updated data of the magnetometer.
-     */
-    updateMagnetometer () {
-        if ((Date.now() - this.magnetometerLastUpdated) < this.magnetometerUpdateInterval) {
-            return Promise.resolve(this._sensors);
-        }
-        return this._ble.read(
-            MBITMORE_SERVICE.ID,
-            MBITMORE_SERVICE.MAGNETOMETER,
-            false)
-            .then(result => {
-                const data = Base64Util.base64ToUint8Array(result.message);
-                const dataView = new DataView(data.buffer, 0);
-                this._sensors.compassHeading = dataView.getUint16(0, true);
-                this._sensors.magneticForce[0] = dataView.getInt16(2, true);
-                this._sensors.magneticForce[1] = dataView.getInt16(4, true);
-                this._sensors.magneticForce[2] = dataView.getInt16(6, true);
-                this._sensors.magneticStrength = Math.round(
-                    Math.sqrt(
-                        (this._sensors.magneticForce[0] ** 2) +
-                        (this._sensors.magneticForce[1] ** 2) +
-                        (this._sensors.magneticForce[2] ** 2)
-                    )
-                );
-                this.magnetometerLastUpdated = Date.now();
-                return this._sensors;
-            });
     }
 
     /**
@@ -430,10 +412,7 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.compassHeading);
-        }
-        return this.updateMagnetometer()
+        return this.updateSensors()
             .then(() => this._sensors.compassHeading);
     }
 
@@ -445,10 +424,7 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.magneticForce[0]);
-        }
-        return this.updateMagnetometer()
+        return this.updateSensors()
             .then(() => this._sensors.magneticForce[0]);
     }
 
@@ -460,10 +436,7 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.magneticForce[1]);
-        }
-        return this.updateMagnetometer()
+        return this.updateSensors()
             .then(() => this._sensors.magneticForce[2]);
     }
 
@@ -475,10 +448,7 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.magneticForce[2]);
-        }
-        return this.updateMagnetometer()
+        return this.updateSensors()
             .then(() => this._sensors.magneticForce[2]);
     }
 
@@ -490,41 +460,8 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.magneticStrength);
-        }
-        return this.updateMagnetometer()
+        return this.updateSensors()
             .then(() => this._sensors.magneticStrength);
-    }
-
-    /**
-     * Update data of the accelerometer.
-     * @return {Promise} - a Promise that resolves sensors which updated data of the magnetometer.
-     */
-    updateAccelerometer () {
-        if ((Date.now() - this.accelerometerLastUpdated) < this.accelerometerUpdateInterval) {
-            return Promise.resolve(this._sensors);
-        }
-        return this._ble.read(
-            MBITMORE_SERVICE.ID,
-            MBITMORE_SERVICE.ACCELEROMETER,
-            false)
-            .then(result => {
-                const data = Base64Util.base64ToUint8Array(result.message);
-                const dataView = new DataView(data.buffer, 0);
-                this._sensors.accelerationX = dataView.getInt16(0, true);
-                this._sensors.accelerationY = dataView.getInt16(2, true);
-                this._sensors.accelerationZ = dataView.getInt16(4, true);
-                this._sensors.accelerationStrength = Math.round(
-                    Math.sqrt(
-                        (this._sensors.accelerationX ** 2) +
-                        (this._sensors.accelerationY ** 2) +
-                        (this._sensors.accelerationZ ** 2)
-                    )
-                );
-                this.accelerometerLastUpdated = Date.now();
-                return this._sensors;
-            });
     }
 
     /**
@@ -535,10 +472,7 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(1000 * this._sensors.accelerationX / G);
-        }
-        return this.updateAccelerometer()
+        return this.updateSensors()
             .then(() => (1000 * this._sensors.accelerationX / G));
     }
 
@@ -550,10 +484,7 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(1000 * this._sensors.accelerationY / G);
-        }
-        return this.updateAccelerometer()
+        return this.updateSensors()
             .then(() => (1000 * this._sensors.accelerationY / G));
     }
 
@@ -565,10 +496,7 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(1000 * this._sensors.accelerationZ / G);
-        }
-        return this.updateAccelerometer()
+        return this.updateSensors()
             .then(() => (1000 * this._sensors.accelerationZ / G));
     }
 
@@ -580,10 +508,7 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(1000 * this._sensors.accelerationStrength / G);
-        }
-        return this.updateAccelerometer()
+        return this.updateSensors()
             .then(() => 1000 * this._sensors.accelerationStrength / G);
     }
 
@@ -774,34 +699,6 @@ class MbitMore {
             this._sensors.accelerationX = dataView.getInt16(12, true);
             this._sensors.accelerationY = dataView.getInt16(14, true);
             this._sensors.accelerationZ = dataView.getInt16(16, true);
-            break;
-        }
-        case MBitMoreDataFormat.IO: {
-            const gpioData = dataView.getUint8(0);
-            for (let i = 0; i < this.gpio.length; i++) {
-                this._sensors.digitalValue[this.gpio[i]] = (gpioData >> i) & 1;
-            }
-            break;
-        }
-        case MBitMoreDataFormat.ANSLOG_IN: {
-            this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(0, true);
-            this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(2, true);
-            this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(4, true);
-            break;
-        }
-        case MBitMoreDataFormat.LIGHT_SENSOR: {
-            this._sensors.lightLevel = dataView.getUint8(0);
-            break;
-        }
-        case MBitMoreDataFormat.ACCELEROMETER: {
-            this._sensors.accelerationX = dataView.getInt16(0, true);
-            this._sensors.accelerationY = dataView.getInt16(2, true);
-            this._sensors.accelerationZ = dataView.getInt16(4, true);
-            break;
-        }
-        case MBitMoreDataFormat.MAGNETOMETER: {
-            this._sensors.compassHeading = dataView.getUint16(0, true);
-            this._sensors.magneticStrength = dataView.getUint16(2, true);
             break;
         }
         case MBitMoreDataFormat.SHARED_DATA: {
