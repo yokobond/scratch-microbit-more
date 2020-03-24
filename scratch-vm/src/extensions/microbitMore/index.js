@@ -514,6 +514,30 @@ class MbitMore {
     }
 
     /**
+     * Read pitch [degrees] is 3D space.
+     * @return {Promise} - a Promise that resolves pitch.
+     */
+    readPitch () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        return this.updateSensors()
+            .then(() => Math.round(this._sensors.pitch * 180 / Math.PI / 1000));
+    }
+
+    /**
+     * Read roll [degrees] is 3D space.
+     * @return {Promise} - a Promise that resolves roll.
+     */
+    readRoll () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        return this.updateSensors()
+            .then(() => Math.round(this._sensors.roll * 180 / Math.PI / 1000));
+    }
+
+    /**
      * Called by the runtime when user wants to scan for a peripheral.
      */
     scan () {
@@ -1340,6 +1364,24 @@ class MbitMoreBlocks {
                     blockType: BlockType.REPORTER
                 },
                 {
+                    opcode: 'getPitch',
+                    text: formatMessage({
+                        id: 'mbitMore.pitch',
+                        default: 'pitch',
+                        description: 'nose up movement of the micro:bit from level'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getRoll',
+                    text: formatMessage({
+                        id: 'mbitMore.roll',
+                        default: 'roll',
+                        description: 'clockwise circular movement of the micro:bit from level'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
                     opcode: 'getMagneticForce',
                     text: formatMessage({
                         id: 'mbitMore.magneticForce',
@@ -1944,6 +1986,22 @@ class MbitMoreBlocks {
         }
     }
 
+    /**
+     * Return pitch [degrees] of the micro:bit heading direction.
+     * @return {Promise} - a Promise that resolves pitch.
+     */
+    getPitch () {
+        return this._peripheral.readPitch();
+    }
+
+    /**
+     * Return roll [degrees] of the micro:bit heading direction.
+     * @return {Promise} - a Promise that resolves roll.
+     */
+    getRoll () {
+        return this._peripheral.readRoll();
+    }
+
     setupTranslations () {
         const localeSetup = formatMessage.setup();
         const extTranslations = {
@@ -1953,6 +2011,8 @@ class MbitMoreBlocks {
                 'mbitMore.compassHeading': '北からの角度',
                 'mbitMore.magneticForce': '磁力 [AXIS]',
                 'mbitMore.acceleration': '加速度 [AXIS]',
+                'mbitMore.pitch': 'ピッチ',
+                'mbitMore.roll': 'ロール',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
                 'mbitMore.getSharedData': '共有データ [INDEX]',
                 'mbitMore.setSharedData': '共有データ [INDEX] を [VALUE] にする',
@@ -1973,6 +2033,8 @@ class MbitMoreBlocks {
                 'mbitMore.compassHeading': 'きたからのかくど',
                 'mbitMore.magneticForce': 'じりょく [AXIS]',
                 'mbitMore.acceleration': 'かそくど [AXIS]',
+                'mbitMore.pitch': 'ピッチ',
+                'mbitMore.roll': 'ロール',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
                 'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
                 'mbitMore.setSharedData': 'きょうゆうデータ [INDEX] を [VALUE] にする',
