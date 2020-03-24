@@ -502,8 +502,8 @@ class MbitMore {
     }
 
     /**
-     * Read magnetic field strength [micro teslas].
-     * @return {Promise} - a Promise that resolves magnetic field strength.
+     * Read acceleration strength [milli-g].
+     * @return {Promise} - a Promise that resolves acceleration strength.
      */
     readAccelerationStrength () {
         if (!this.isConnected()) {
