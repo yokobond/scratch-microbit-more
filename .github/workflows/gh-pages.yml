@@ -20,8 +20,8 @@ jobs:
           path: ./microbitMore
       - run: sh ./microbitMore/install.sh
       - run: npm run build
-      - run: cp ./microbitMore/playground/index.html ./build/index.html
-      - run: cp ./microbitMore/playground/favicon.ico ./build/static/favicon.ico
+      - run: cp ./microbitMore/site/index.html ./build/index.html
+      - run: cp ./microbitMore/site/favicon.ico ./build/static/favicon.ico
       - uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
