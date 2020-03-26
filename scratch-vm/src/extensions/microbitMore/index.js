@@ -23,6 +23,28 @@ const BLECommand = {
     CMD_PIN_CONFIG: 0x80,
     CMD_DISPLAY_TEXT: 0x81,
     CMD_DISPLAY_LED: 0x82,
+    CMD_PROTOCOL_SET: 0x90,
+    CMD_PIN_PULL_UP: 0x91,
+    CMD_PIN_PULL_DOWN: 0x92,
+    // CMD_PIN_ANALOG_IN: 0x93,
+    CMD_PIN_OUTPUT: 0x94,
+    CMD_PIN_PWM: 0x95,
+    CMD_PIN_SERVO: 0x96,
+    CMD_PIN_TOUCH: 0x97,
+    CMD_SHARED_DATA_SET: 0x98
+};
+
+
+/**
+ * Enum for micro:bit BLE command protocol v0.
+ * https://github.com/LLK/scratch-microbit-firmware/blob/master/protocol.md
+ * @readonly
+ * @enum {number}
+ */
+const BLECommandV0 = {
+    CMD_PIN_CONFIG: 0x80,
+    CMD_DISPLAY_TEXT: 0x81,
+    CMD_DISPLAY_LED: 0x82,
     CMD_PIN_INPUT: 0x90,
     CMD_PIN_OUTPUT: 0x91,
     CMD_PIN_PWM: 0x92,
@@ -75,6 +97,17 @@ const MBITMORE_SERVICE = {
     ANSLOG_IN: 'a62d0003-1b34-4092-8dee-4151f63b2865',
     SENSORS: 'a62d0004-1b34-4092-8dee-4151f63b2865',
     SHARED_DATA: 'a62d0010-1b34-4092-8dee-4151f63b2865'
+};
+
+/**
+ * Enum for pin mode menu options.
+ * @readonly
+ * @enum {string}
+ */
+const PinMode = {
+    PULL_UP: 'pullUp',
+    PULL_DOWN: 'pullDown',
+    TOUCH: 'touch'
 };
 
 /**
@@ -226,18 +259,32 @@ class MbitMore {
         return this.send(BLECommand.CMD_DISPLAY_LED, matrix);
     }
 
-    setPinInput (pinIndex, util) {
-        this.send(BLECommand.CMD_PIN_INPUT, new Uint8Array([pinIndex]), util);
+    setPinMode (pinIndex, mode, util) {
+        switch (mode) {
+        case PinMode.PULL_UP:
+            this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_PULL_UP : BLECommandV0.CMD_PIN_INPUT,
+                new Uint8Array([pinIndex]), util);
+            break;
+
+        case PinMode.PULL_DOWN:
+            this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_PULL_DOWN : BLECommandV0.CMD_PIN_INPUT,
+                new Uint8Array([pinIndex]), util);
+            break;
+
+        default:
+            break;
+        }
     }
 
     setPinOutput (pinIndex, level, util) {
-        this.send(BLECommand.CMD_PIN_OUTPUT, new Uint8Array([pinIndex, level]), util);
+        this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_OUTPUT : BLECommandV0.CMD_PIN_OUTPUT,
+            new Uint8Array([pinIndex, level]), util);
     }
 
     setPinPWM (pinIndex, level, util) {
         const dataView = new DataView(new ArrayBuffer(2));
         dataView.setUint16(0, level, true);
-        this.send(BLECommand.CMD_PIN_PWM,
+        this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_PWM : BLECommandV0.CMD_PIN_PWM,
             new Uint8Array([
                 pinIndex,
                 dataView.getUint8(0),
@@ -251,7 +298,7 @@ class MbitMore {
         const dataView = new DataView(new ArrayBuffer(4));
         dataView.setUint16(0, range, true);
         dataView.setUint16(2, center, true);
-        this.send(BLECommand.CMD_PIN_SERVO,
+        this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_SERVO : BLECommandV0.CMD_PIN_SERVO,
             new Uint8Array([
                 pinIndex,
                 angle,
@@ -827,7 +874,8 @@ class MbitMore {
     setSharedData (sharedDataIndex, sharedDataValue, util) {
         const dataView = new DataView(new ArrayBuffer(2));
         dataView.setInt16(0, sharedDataValue, true);
-        this.send(BLECommand.CMD_SHARED_DATA_SET,
+        const command = this._useMbitMoreService ? BLECommand.CMD_SHARED_DATA_SET : BLECommandV0.CMD_SHARED_DATA_SET;
+        this.send(command,
             new Uint8Array([
                 sharedDataIndex,
                 dataView.getUint8(0),
@@ -1136,6 +1184,29 @@ class MbitMoreBlocks {
         ];
     }
 
+    /**
+     * @return {array} - text and values for each pin mode menu element
+     */
+    get PIN_MODE_MENU () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinModeMenu.pullUp',
+                    default: 'pull up',
+                    description: 'label for pullUp mode'
+                }),
+                value: PinMode.PULL_UP
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinModeMenu.pullDown',
+                    default: 'pull down',
+                    description: 'label for pullDown mode'
+                }),
+                value: PinMode.PULL_DOWN
+            }
+        ];
+    }
 
     /**
      * Construct a set of MicroBit blocks.
@@ -1470,11 +1541,11 @@ class MbitMoreBlocks {
                     }
                 },
                 {
-                    opcode: 'setInput',
+                    opcode: 'setPinMode',
                     text: formatMessage({
-                        id: 'mbitMore.setInput',
-                        default: 'set [PIN] Input',
-                        description: 'set pin to Input mode'
+                        id: 'mbitMore.setPinMode',
+                        default: 'set [PIN] to [MODE]',
+                        description: 'set a pin into the mode'
                     }),
                     blockType: BlockType.COMMAND,
                     arguments: {
@@ -1482,6 +1553,11 @@ class MbitMoreBlocks {
                             type: ArgumentType.STRING,
                             menu: 'gpio',
                             defaultValue: '0'
+                        },
+                        MODE: {
+                            type: ArgumentType.STRING,
+                            menu: 'pinMode',
+                            defaultValue: PinMode.ANSLOG_IN
                         }
                     }
                 },
@@ -1595,6 +1671,10 @@ class MbitMoreBlocks {
                 axis: {
                     acceptReporters: true,
                     items: this.AXIS_MENU
+                },
+                pinMode: {
+                    acceptReporters: false,
+                    items: this.PIN_MODE_MENU
                 }
             }
         };
@@ -1867,16 +1947,18 @@ class MbitMoreBlocks {
     }
 
     /**
-     * Set the pin to Input mode.
+     * Set mode of the pin.
      * @param {object} args - the block's arguments.
+     * @property {string} args.PIN - index of the pin.
+     * @property {string} args.MODE - mode to set.
      * @param {object} util - utility object provided by the runtime.
      * @return {undefined}
      */
-    setInput (args, util) {
+    setPinMode (args, util) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (pin < 0 || pin > 20) return;
-        this._peripheral.setPinInput(pin, util);
+        this._peripheral.setPinMode(pin, args.MODE, util);
     }
 
     /**
@@ -2016,7 +2098,7 @@ class MbitMoreBlocks {
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
                 'mbitMore.getSharedData': '共有データ [INDEX]',
                 'mbitMore.setSharedData': '共有データ [INDEX] を [VALUE] にする',
-                'mbitMore.setInput': 'ピン [PIN] を入力モードにする',
+                'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にする',
                 'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
                 'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] 度にする',
@@ -2025,7 +2107,9 @@ class MbitMoreBlocks {
                 'mbitMore.axisMenu.x': 'x',
                 'mbitMore.axisMenu.y': 'y',
                 'mbitMore.axisMenu.z': 'z',
-                'mbitMore.axisMenu.absolute': '大きさ'
+                'mbitMore.axisMenu.absolute': '大きさ',
+                'mbitMore.pinModeMenu.pullUp': 'プルアップ',
+                'mbitMore.pinModeMenu.pullDown': 'プルダウン'
             },
             'ja-Hira': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
@@ -2038,7 +2122,7 @@ class MbitMoreBlocks {
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
                 'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
                 'mbitMore.setSharedData': 'きょうゆうデータ [INDEX] を [VALUE] にする',
-                'mbitMore.setInput': 'ピン [PIN] をにゅうりょくモードにする',
+                'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にする',
                 'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
                 'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
@@ -2047,7 +2131,9 @@ class MbitMoreBlocks {
                 'mbitMore.axisMenu.x': 'x',
                 'mbitMore.axisMenu.y': 'y',
                 'mbitMore.axisMenu.z': 'z',
-                'mbitMore.axisMenu.absolute': 'おおきさ'
+                'mbitMore.axisMenu.absolute': 'おおきさ',
+                'mbitMore.pinModeMenu.pullUp': 'プルアップ',
+                'mbitMore.pinModeMenu.pullDown': 'プルダウン'
             },
             'pt-br': {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
