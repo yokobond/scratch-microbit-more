@@ -26,11 +26,11 @@ const BLECommand = {
     CMD_PROTOCOL_SET: 0x90,
     CMD_PIN_PULL_UP: 0x91,
     CMD_PIN_PULL_DOWN: 0x92,
-    // CMD_PIN_ANALOG_IN: 0x93,
-    CMD_PIN_OUTPUT: 0x94,
-    CMD_PIN_PWM: 0x95,
-    CMD_PIN_SERVO: 0x96,
-    CMD_PIN_TOUCH: 0x97,
+    CMD_PIN_OUTPUT: 0x93,
+    CMD_PIN_PWM: 0x94,
+    CMD_PIN_SERVO: 0x95,
+    CMD_PIN_TOUCH: 0x96,
+    CMD_EVENT_SET: 0x97,
     CMD_SHARED_DATA_SET: 0x98
 };
 
@@ -57,7 +57,28 @@ const MBitMoreDataFormat = {
     MIX_01: 0x01,
     MIX_02: 0x02,
     MIX_03: 0x03,
-    SHARED_DATA: 0x11
+    SHARED_DATA: 0x11,
+    EVENT: 0x12
+};
+
+/**
+ * Enum for event type in the micro:bit runtime.
+ */
+const MicroBitEventType = {
+    MICROBIT_PIN_EVENT_NONE: 0,
+    MICROBIT_PIN_EVENT_ON_EDGE: 1,
+    MICROBIT_PIN_EVENT_ON_PULSE: 2,
+    MICROBIT_PIN_EVENT_ON_TOUCH: 3
+};
+
+/**
+ * Enum for event value in the micro:bit runtime.
+ */
+const MicroBitEvent = {
+    MICROBIT_PIN_EVT_RISE: 2,
+    MICROBIT_PIN_EVT_FALL: 3,
+    MICROBIT_PIN_EVT_PULSE_HI: 4,
+    MICROBIT_PIN_EVT_PULSE_LO: 5
 };
 
 /**
@@ -92,7 +113,7 @@ const MICROBIT_SERVICE = {
 
 const MBITMORE_SERVICE = {
     ID: 'a62d574e-1b34-4092-8dee-4151f63b2865',
-    CONFIG: 'a62d0001-1b34-4092-8dee-4151f63b2865',
+    EVENT: 'a62d0001-1b34-4092-8dee-4151f63b2865',
     IO: 'a62d0002-1b34-4092-8dee-4151f63b2865',
     ANSLOG_IN: 'a62d0003-1b34-4092-8dee-4151f63b2865',
     SENSORS: 'a62d0004-1b34-4092-8dee-4151f63b2865',
@@ -168,6 +189,13 @@ class MbitMore {
             digitalValue: {},
             sharedData: [0, 0, 0, 0]
         };
+
+        /**
+         * The most recently received events for each pin.
+         * @type {Object.<number>} - Store of pins which has events.
+         * @private
+         */
+        this._events = {};
 
         this.analogIn = [0, 1, 2];
         this.analogIn.forEach(pinIndex => {
@@ -706,6 +734,10 @@ class MbitMore {
                         MBITMORE_SERVICE.ID,
                         MBITMORE_SERVICE.SHARED_DATA,
                         this._updateMicrobitService);
+                    this._ble.startNotifications(
+                        MBITMORE_SERVICE.ID,
+                        MBITMORE_SERVICE.EVENT,
+                        this._updateMicrobitService);
                 }
             });
         this._timeoutID = window.setTimeout(
@@ -728,7 +760,8 @@ class MbitMore {
             dataFormat !== MBitMoreDataFormat.LIGHT_SENSOR &&
             dataFormat !== MBitMoreDataFormat.ACCELEROMETER &&
             dataFormat !== MBitMoreDataFormat.MAGNETOMETER &&
-            dataFormat !== MBitMoreDataFormat.SHARED_DATA) {
+            dataFormat !== MBitMoreDataFormat.SHARED_DATA &&
+            dataFormat !== MBitMoreDataFormat.EVENT) {
             // Read original micro:bit data.
             this._sensors.tiltX = data[1] | (data[0] << 8);
             if (this._sensors.tiltX > (1 << 15)) this._sensors.tiltX -= (1 << 16);
@@ -777,6 +810,15 @@ class MbitMore {
             this._sensors.sharedData[1] = dataView.getInt16(2, true);
             this._sensors.sharedData[2] = dataView.getInt16(4, true);
             this._sensors.sharedData[3] = dataView.getInt16(6, true);
+            break;
+        }
+        case MBitMoreDataFormat.EVENT: {
+            const pinIndex = dataView.getUint8(0);
+            if (!this._events[pinIndex]) {
+                this._events[pinIndex] = {};
+            }
+            const event = dataView.getUint16(1, true);
+            this._events[pinIndex][event] = dataView.getUint32(3, true);
             break;
         }
         default:
@@ -882,6 +924,33 @@ class MbitMore {
                 dataView.getUint8(1)]),
             util);
         this._sensors.sharedData[sharedDataIndex] = sharedDataValue;
+    }
+
+    /**
+     * Return the last timestamp of the pin event or 0 when the event is not sent.
+     * @param {number} pinIndex - index of the pin to get the event.
+     * @param {MicroBitEvent} event - event to get.
+     * @return {number} Timestamp of the last event.
+     */
+    getPinEventTimestamp (pinIndex, event) {
+        if (this._events[pinIndex] && this._events[pinIndex][event]) {
+            return this._events[pinIndex][event];
+        }
+        return 0;
+    }
+
+    /**
+     * Set event type to be get from the pin.
+     * @param {number} pinIndex - Index of the pin to set.
+     * @param {MicroBitEventType} eventType - Event type to set.
+     * @param {object} util - utility object provided by the runtime.
+    */
+    setPinEventType (pinIndex, eventType, util) {
+        this.send(BLECommand.CMD_EVENT_SET,
+            new Uint8Array([
+                pinIndex,
+                eventType]),
+            util);
     }
 }
 
@@ -1209,6 +1278,118 @@ class MbitMoreBlocks {
     }
 
     /**
+     * @return {array} - Menu items for event selector.
+     */
+    get PIN_EVENT_MENU () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventMenu.rise',
+                    default: 'rise',
+                    description: 'label for rise event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_RISE
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventMenu.fall',
+                    default: 'fall',
+                    description: 'label for fall event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_FALL
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventMenu.pulseHigh',
+                    default: 'high pulse',
+                    description: 'label for high pulse event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_HI
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventMenu.pulseLow',
+                    default: 'low pulse',
+                    description: 'label for low pulse event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_LO
+            }
+        ];
+    }
+
+    /**
+     * @return {array} - Menu items for event selector.
+     */
+    get PIN_EVENT_TIMESTAMP_MENU () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTimestampMenu.rise',
+                    default: 'rise',
+                    description: 'label for rise event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_RISE
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTimestampMenu.fall',
+                    default: 'fall',
+                    description: 'label for fall event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_FALL
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTimestampMenu.pulseHigh',
+                    default: 'high pulse',
+                    description: 'label for high pulse event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_HI
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTimestampMenu.pulseLow',
+                    default: 'low pulse',
+                    description: 'label for low pulse event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_LO
+            }
+        ];
+    }
+
+    /**
+     * @return {array} - Menu items for event listening.
+     */
+    get PIN_EVENT_TYPE_MENU () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTypeMenu.none',
+                    default: 'none',
+                    description: 'label for remove event listener'
+                }),
+                value: MicroBitEventType.MICROBIT_PIN_EVENT_NONE
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTypeMenu.edge',
+                    default: 'edge',
+                    description: 'label for edge event type'
+                }),
+                value: MicroBitEventType.MICROBIT_PIN_EVENT_ON_EDGE
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTypeMenu.pulse',
+                    default: 'pulse',
+                    description: 'label for pulse event type'
+                }),
+                value: MicroBitEventType.MICROBIT_PIN_EVENT_ON_PULSE
+            }
+        ];
+    }
+
+    /**
      * Construct a set of MicroBit blocks.
      * @param {Runtime} runtime - the Scratch 3.0 runtime.
      */
@@ -1221,6 +1402,12 @@ class MbitMoreBlocks {
 
         // Create a new MicroBit peripheral instance
         this._peripheral = new MbitMore(this.runtime, MbitMoreBlocks.EXTENSION_ID);
+
+        /**
+         * Event holder of pin events.
+         * @type {object.<number>} - list of pins which has events.
+         */
+        this.lastEvents = {};
     }
 
     /**
@@ -1505,6 +1692,70 @@ class MbitMoreBlocks {
                     }
                 },
                 {
+                    opcode: 'setPinEventType',
+                    text: formatMessage({
+                        id: 'mbitMore.setPinEventType',
+                        default: 'catch event [EVENT_TYPE] on [PIN]',
+                        description: 'listen the event on the pin'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        EVENT_TYPE: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'pinEventTypeMenu',
+                            defaultValue: this.PIN_EVENT_TYPE_MENU[0].value
+                        },
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getPinEventTimestamp',
+                    text: formatMessage({
+                        id: 'mbitMore.getPinEventTimestamp',
+                        default: 'timestamp of [EVENT] at [PIN]',
+                        description: 'value of the timestamp of the event'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        EVENT: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'pinEventTimestampMenu',
+                            defaultValue: this.PIN_EVENT_MENU[0].value
+                        },
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'whenPinEvent',
+                    text: formatMessage({
+                        id: 'mbitMore.whenPinEvent',
+                        default: 'when catch [EVENT] at pin [PIN]',
+                        description: 'when catch the event at the pin'
+
+                    }),
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        EVENT: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'pinEventMenu',
+                            defaultValue: this.PIN_EVENT_MENU[0].value
+                        },
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
                     opcode: 'getSharedData',
                     text: formatMessage({
                         id: 'mbitMore.getSharedData',
@@ -1675,6 +1926,18 @@ class MbitMoreBlocks {
                 pinMode: {
                     acceptReporters: false,
                     items: this.PIN_MODE_MENU
+                },
+                pinEventTypeMenu: {
+                    acceptReporters: false,
+                    items: this.PIN_EVENT_TYPE_MENU
+                },
+                pinEventMenu: {
+                    acceptReporters: false,
+                    items: this.PIN_EVENT_MENU
+                },
+                pinEventTimestampMenu: {
+                    acceptReporters: false,
+                    items: this.PIN_EVENT_TIMESTAMP_MENU
                 }
             }
         };
@@ -2084,6 +2347,82 @@ class MbitMoreBlocks {
         return this._peripheral.readRoll();
     }
 
+    /**
+     * Set listening event type at the pin.
+     * @param {object} args - the block's arguments.
+     * @property {string} args.PIN - index of the pin.
+     * @property {string} args.EVENT_TYPE - event to listen.
+     * @param {object} util - utility object provided by the runtime.
+     * @return {Promise} - a Promise that resolves the setting.
+    */
+    setPinEventType (args, util) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return;
+        if (pin < 0 || pin > 20) return;
+        const eventType = parseInt(args.EVENT_TYPE, 10);
+        if (isNaN(eventType)) return 0;
+        return this._peripheral.setPinEventType(pin, eventType, util);
+    }
+
+    /**
+     * Rerutn timestamp value (micro senonds) of the event.
+     * @param {object} args - the block's arguments.
+     * @property {string} args.PIN - index of the pin.
+     * @property {string} args.EVENT - event value to get.
+     * @param {object} util - utility object provided by the runtime.
+     * @return {number} - timestamp of the event.
+     */
+    getPinEventTimestamp (args) {
+        const pinIndex = parseInt(args.PIN, 10);
+        if (isNaN(pinIndex)) return 0;
+        if (pinIndex < 0 || pinIndex > 20) return 0;
+        const event = parseInt(args.EVENT, 10);
+        if (isNaN(event)) return 0;
+        return this._peripheral.getPinEventTimestamp(pinIndex, event);
+    }
+
+    /**
+     * Test whether the event rose at the pin.
+     * @param {object} args - the block's arguments.
+     * @property {string} args.EVENT - event to catch.
+     * @return {boolean} - true if the event rose.
+     */
+    whenPinEvent (args) {
+        const pinIndex = parseInt(args.PIN, 10);
+        if (isNaN(pinIndex)) return false;
+        const event = parseInt(args.EVENT, 10);
+        if (isNaN(event)) return 0;
+        const prevTimestamp = this.getLastEventTimestamp(pinIndex, event);
+        const lastTimestamp = this._peripheral.getPinEventTimestamp(pinIndex, event);
+        this.setLastEventTimestamp(pinIndex, event, lastTimestamp);
+        if (lastTimestamp === 0) return false;
+        return prevTimestamp !== lastTimestamp;
+    }
+
+    /**
+     * Return timestamp of the event at the pin.
+     * @param {number} pinIndex - index of the pin.
+     * @param {number} event - event to get timestamp.
+     * @return {number} - timestamp of the event.
+     */
+    getLastEventTimestamp (pinIndex, event) {
+        if (this.lastEvents[pinIndex] && this.lastEvents[pinIndex][event]) {
+            return this.lastEvents[pinIndex][event];
+        }
+        return 0;
+    }
+
+    /**
+     * Hold timestamp of the event at the pin.
+     * @param {number} pinIndex - index of the pin.
+     * @param {number} event - event to be save.
+     * @param {number} timestamp - timestamp value of the event.
+     */
+    setLastEventTimestamp (pinIndex, event, timestamp) {
+        if (!this.lastEvents[pinIndex]) this.lastEvents[pinIndex] = {};
+        this.lastEvents[pinIndex][event] = timestamp;
+    }
+
     setupTranslations () {
         const localeSetup = formatMessage.setup();
         const extTranslations = {
@@ -2109,7 +2448,21 @@ class MbitMoreBlocks {
                 'mbitMore.axisMenu.z': 'z',
                 'mbitMore.axisMenu.absolute': '大きさ',
                 'mbitMore.pinModeMenu.pullUp': 'プルアップ',
-                'mbitMore.pinModeMenu.pullDown': 'プルダウン'
+                'mbitMore.pinModeMenu.pullDown': 'プルダウン',
+                'mbitMore.setPinEventType': 'ピン [PIN] で [EVENT_TYPE] ',
+                'mbitMore.pinEventTypeMenu.none': 'イベントを受けない',
+                'mbitMore.pinEventTypeMenu.edge': 'エッジタイプのイベントを受ける',
+                'mbitMore.pinEventTypeMenu.pulse': 'パルスタイプのイベントを受ける',
+                'mbitMore.whenPinEvent': 'ピン [PIN] で [EVENT] イベントが上がった',
+                'mbitMore.pinEventMenu.rise': 'ライズ',
+                'mbitMore.pinEventMenu.fall': 'フォール',
+                'mbitMore.pinEventMenu.pulseHigh': 'ハイパルス',
+                'mbitMore.pinEventMenu.pulseLow': 'ローパルス',
+                'mbitMore.getPinEventTimestamp': 'ピン [PIN] の [EVENT]',
+                'mbitMore.pinEventTimestampMenu.rise': 'ライズの時刻',
+                'mbitMore.pinEventTimestampMenu.fall': 'フォールの時刻',
+                'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスの期間',
+                'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスの期間'
             },
             'ja-Hira': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
@@ -2133,7 +2486,21 @@ class MbitMoreBlocks {
                 'mbitMore.axisMenu.z': 'z',
                 'mbitMore.axisMenu.absolute': 'おおきさ',
                 'mbitMore.pinModeMenu.pullUp': 'プルアップ',
-                'mbitMore.pinModeMenu.pullDown': 'プルダウン'
+                'mbitMore.pinModeMenu.pullDown': 'プルダウン',
+                'mbitMore.setPinEventType': 'ピン [PIN] で [EVENT_TYPE]',
+                'mbitMore.pinEventTypeMenu.none': 'イベントをうけない',
+                'mbitMore.pinEventTypeMenu.edge': 'エッジタイプのイベントをうける',
+                'mbitMore.pinEventTypeMenu.pulse': 'パルスタイプのイベントをうける',
+                'mbitMore.whenPinEvent': 'ピン [PIN] で [EVENT] イベントがあがった',
+                'mbitMore.pinEventMenu.rise': 'ライズ',
+                'mbitMore.pinEventMenu.fall': 'フォール',
+                'mbitMore.pinEventMenu.pulseHigh': 'ハイパルス',
+                'mbitMore.pinEventMenu.pulseLow': 'ローパルス',
+                'mbitMore.getPinEventTimestamp': 'ピン [PIN] の [EVENT]',
+                'mbitMore.pinEventTimestampMenu.rise': 'ライズのじかん',
+                'mbitMore.pinEventTimestampMenu.fall': 'フォールのじかん',
+                'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスのきかん',
+                'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスのきかん'
             },
             'pt-br': {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
