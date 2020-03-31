@@ -1284,19 +1284,11 @@ class MbitMoreBlocks {
         return [
             {
                 text: formatMessage({
-                    id: 'mbitMore.pinEventMenu.rise',
-                    default: 'rise',
-                    description: 'label for rise event'
+                    id: 'mbitMore.pinEventMenu.pulseLow',
+                    default: 'low pulse',
+                    description: 'label for low pulse event'
                 }),
-                value: MicroBitEvent.MICROBIT_PIN_EVT_RISE
-            },
-            {
-                text: formatMessage({
-                    id: 'mbitMore.pinEventMenu.fall',
-                    default: 'fall',
-                    description: 'label for fall event'
-                }),
-                value: MicroBitEvent.MICROBIT_PIN_EVT_FALL
+                value: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_LO
             },
             {
                 text: formatMessage({
@@ -1308,11 +1300,19 @@ class MbitMoreBlocks {
             },
             {
                 text: formatMessage({
-                    id: 'mbitMore.pinEventMenu.pulseLow',
-                    default: 'low pulse',
-                    description: 'label for low pulse event'
+                    id: 'mbitMore.pinEventMenu.fall',
+                    default: 'fall',
+                    description: 'label for fall event'
                 }),
-                value: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_LO
+                value: MicroBitEvent.MICROBIT_PIN_EVT_FALL
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventMenu.rise',
+                    default: 'rise',
+                    description: 'label for rise event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_RISE
             }
         ];
     }
@@ -1324,19 +1324,11 @@ class MbitMoreBlocks {
         return [
             {
                 text: formatMessage({
-                    id: 'mbitMore.pinEventTimestampMenu.rise',
-                    default: 'rise',
-                    description: 'label for rise event'
+                    id: 'mbitMore.pinEventTimestampMenu.pulseLow',
+                    default: 'low pulse',
+                    description: 'label for low pulse event'
                 }),
-                value: MicroBitEvent.MICROBIT_PIN_EVT_RISE
-            },
-            {
-                text: formatMessage({
-                    id: 'mbitMore.pinEventTimestampMenu.fall',
-                    default: 'fall',
-                    description: 'label for fall event'
-                }),
-                value: MicroBitEvent.MICROBIT_PIN_EVT_FALL
+                value: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_LO
             },
             {
                 text: formatMessage({
@@ -1348,11 +1340,19 @@ class MbitMoreBlocks {
             },
             {
                 text: formatMessage({
-                    id: 'mbitMore.pinEventTimestampMenu.pulseLow',
-                    default: 'low pulse',
-                    description: 'label for low pulse event'
+                    id: 'mbitMore.pinEventTimestampMenu.fall',
+                    default: 'fall',
+                    description: 'label for fall event'
                 }),
-                value: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_LO
+                value: MicroBitEvent.MICROBIT_PIN_EVT_FALL
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTimestampMenu.rise',
+                    default: 'rise',
+                    description: 'label for rise event'
+                }),
+                value: MicroBitEvent.MICROBIT_PIN_EVT_RISE
             }
         ];
     }
@@ -1372,19 +1372,19 @@ class MbitMoreBlocks {
             },
             {
                 text: formatMessage({
-                    id: 'mbitMore.pinEventTypeMenu.edge',
-                    default: 'edge',
-                    description: 'label for edge event type'
-                }),
-                value: MicroBitEventType.MICROBIT_PIN_EVENT_ON_EDGE
-            },
-            {
-                text: formatMessage({
                     id: 'mbitMore.pinEventTypeMenu.pulse',
                     default: 'pulse',
                     description: 'label for pulse event type'
                 }),
                 value: MicroBitEventType.MICROBIT_PIN_EVENT_ON_PULSE
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.pinEventTypeMenu.edge',
+                    default: 'edge',
+                    description: 'label for edge event type'
+                }),
+                value: MicroBitEventType.MICROBIT_PIN_EVENT_ON_EDGE
             }
         ];
     }
@@ -1586,7 +1586,6 @@ class MbitMoreBlocks {
                         }
                     }
                 },
-                '---',
                 {
                     opcode: 'isPinConnected',
                     text: formatMessage({
@@ -1603,6 +1602,7 @@ class MbitMoreBlocks {
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'getLightLevel',
                     text: formatMessage({
@@ -1675,11 +1675,12 @@ class MbitMoreBlocks {
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'getAnalogValue',
                     text: formatMessage({
                         id: 'mbitMore.analogValue',
-                        default: 'analog in pin [PIN]',
+                        default: 'analog value of pin [PIN]',
                         description: 'analog input value of the pin'
                     }),
                     blockType: BlockType.REPORTER,
@@ -1692,102 +1693,18 @@ class MbitMoreBlocks {
                     }
                 },
                 {
-                    opcode: 'setPinEventType',
+                    opcode: 'getDigitalValue',
                     text: formatMessage({
-                        id: 'mbitMore.setPinEventType',
-                        default: 'catch event [EVENT_TYPE] on [PIN]',
-                        description: 'listen the event on the pin'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        EVENT_TYPE: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'pinEventTypeMenu',
-                            defaultValue: this.PIN_EVENT_TYPE_MENU[0].value
-                        },
-                        PIN: {
-                            type: ArgumentType.STRING,
-                            menu: 'gpio',
-                            defaultValue: '0'
-                        }
-                    }
-                },
-                {
-                    opcode: 'getPinEventTimestamp',
-                    text: formatMessage({
-                        id: 'mbitMore.getPinEventTimestamp',
-                        default: 'timestamp of [EVENT] at [PIN]',
-                        description: 'value of the timestamp of the event'
+                        id: 'mbitMore.digitalValue',
+                        default: 'digital value of pin [PIN]',
+                        description: 'digital input value of the pin'
                     }),
                     blockType: BlockType.REPORTER,
                     arguments: {
-                        EVENT: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'pinEventTimestampMenu',
-                            defaultValue: this.PIN_EVENT_MENU[0].value
-                        },
                         PIN: {
                             type: ArgumentType.STRING,
                             menu: 'gpio',
                             defaultValue: '0'
-                        }
-                    }
-                },
-                {
-                    opcode: 'whenPinEvent',
-                    text: formatMessage({
-                        id: 'mbitMore.whenPinEvent',
-                        default: 'when catch [EVENT] at pin [PIN]',
-                        description: 'when catch the event at the pin'
-
-                    }),
-                    blockType: BlockType.HAT,
-                    arguments: {
-                        EVENT: {
-                            type: ArgumentType.NUMBER,
-                            menu: 'pinEventMenu',
-                            defaultValue: this.PIN_EVENT_MENU[0].value
-                        },
-                        PIN: {
-                            type: ArgumentType.STRING,
-                            menu: 'gpio',
-                            defaultValue: '0'
-                        }
-                    }
-                },
-                {
-                    opcode: 'getSharedData',
-                    text: formatMessage({
-                        id: 'mbitMore.getSharedData',
-                        default: 'shared data [INDEX]',
-                        description: 'value of the shared data'
-                    }),
-                    blockType: BlockType.REPORTER,
-                    arguments: {
-                        INDEX: {
-                            type: ArgumentType.STRING,
-                            menu: 'sharedDataIndex',
-                            defaultValue: '0'
-                        }
-                    }
-                },
-                {
-                    opcode: 'setSharedData',
-                    text: formatMessage({
-                        id: 'mbitMore.setSharedData',
-                        default: 'shared data [INDEX] to [VALUE]',
-                        description: 'set value into the shared data'
-                    }),
-                    blockType: BlockType.COMMAND,
-                    arguments: {
-                        INDEX: {
-                            type: ArgumentType.STRING,
-                            menu: 'sharedDataIndex',
-                            defaultValue: '0'
-                        },
-                        VALUE: {
-                            type: ArgumentType.NUMBER,
-                            defaultValue: 0
                         }
                     }
                 },
@@ -1795,7 +1712,7 @@ class MbitMoreBlocks {
                     opcode: 'setPinMode',
                     text: formatMessage({
                         id: 'mbitMore.setPinMode',
-                        default: 'set [PIN] to [MODE]',
+                        default: 'set pin [PIN] to [MODE]',
                         description: 'set a pin into the mode'
                     }),
                     blockType: BlockType.COMMAND,
@@ -1812,6 +1729,7 @@ class MbitMoreBlocks {
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'setOutput',
                     text: formatMessage({
@@ -1878,6 +1796,108 @@ class MbitMoreBlocks {
                         CENTER: {
                             type: ArgumentType.NUMBER,
                             defaultValue: 1500
+                        }
+                    }
+                },
+                '---',
+                {
+                    opcode: 'setPinEventType',
+                    text: formatMessage({
+                        id: 'mbitMore.setPinEventType',
+                        default: 'catch event [EVENT_TYPE] on [PIN]',
+                        description: 'listen the event on the pin'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        EVENT_TYPE: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'pinEventTypeMenu',
+                            defaultValue: this.PIN_EVENT_TYPE_MENU[0].value
+                        },
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'whenPinEvent',
+                    text: formatMessage({
+                        id: 'mbitMore.whenPinEvent',
+                        default: 'when catch [EVENT] at pin [PIN]',
+                        description: 'when catch the event at the pin'
+
+                    }),
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        EVENT: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'pinEventMenu',
+                            defaultValue: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_LO
+                        },
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'getPinEventTimestamp',
+                    text: formatMessage({
+                        id: 'mbitMore.getPinEventTimestamp',
+                        default: 'timestamp of [EVENT] at [PIN]',
+                        description: 'value of the timestamp of the event'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        EVENT: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'pinEventTimestampMenu',
+                            defaultValue: MicroBitEvent.MICROBIT_PIN_EVT_PULSE_LO
+                        },
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'gpio',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                '---',
+                {
+                    opcode: 'getSharedData',
+                    text: formatMessage({
+                        id: 'mbitMore.getSharedData',
+                        default: 'shared data [INDEX]',
+                        description: 'value of the shared data'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    arguments: {
+                        INDEX: {
+                            type: ArgumentType.STRING,
+                            menu: 'sharedDataIndex',
+                            defaultValue: '0'
+                        }
+                    }
+                },
+                {
+                    opcode: 'setSharedData',
+                    text: formatMessage({
+                        id: 'mbitMore.setSharedData',
+                        default: 'shared data [INDEX] to [VALUE]',
+                        description: 'set value into the shared data'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        INDEX: {
+                            type: ArgumentType.STRING,
+                            menu: 'sharedDataIndex',
+                            defaultValue: '0'
+                        },
+                        VALUE: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 0
                         }
                     }
                 }
@@ -2181,6 +2201,18 @@ class MbitMoreBlocks {
     }
 
     /**
+     * Return digital value of the pin.
+     * @param {object} args - the block's arguments.
+     * @return {boolean} - true if the pin is connected.
+     */
+    getDigitalValue (args) {
+        const pin = parseInt(args.PIN, 10);
+        if (isNaN(pin)) return 0;
+        if (!this.GPIO_MENU.includes(pin.toString())) return 0;
+        return (this._peripheral._checkPinState(pin) === 0) ? 1 : 0;
+    }
+
+    /**
      * Return value of the shared data.
      * @param {object} args - the block's arguments.
      * @property {string} args.INDEX - index of the shared data.
@@ -2435,14 +2467,15 @@ class MbitMoreBlocks {
                 'mbitMore.pitch': 'ピッチ',
                 'mbitMore.roll': 'ロール',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
+                'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
                 'mbitMore.getSharedData': '共有データ [INDEX]',
                 'mbitMore.setSharedData': '共有データ [INDEX] を [VALUE] にする',
                 'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にする',
                 'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
                 'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] 度にする',
-                'mbitMore.digitalValueMenu.Low': 'Low',
-                'mbitMore.digitalValueMenu.High': 'High',
+                'mbitMore.digitalValueMenu.Low': '0',
+                'mbitMore.digitalValueMenu.High': '1',
                 'mbitMore.axisMenu.x': 'x',
                 'mbitMore.axisMenu.y': 'y',
                 'mbitMore.axisMenu.z': 'z',
@@ -2473,14 +2506,15 @@ class MbitMoreBlocks {
                 'mbitMore.pitch': 'ピッチ',
                 'mbitMore.roll': 'ロール',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
+                'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
                 'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
                 'mbitMore.setSharedData': 'きょうゆうデータ [INDEX] を [VALUE] にする',
                 'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にする',
                 'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
                 'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
-                'mbitMore.digitalValueMenu.Low': 'ロー',
-                'mbitMore.digitalValueMenu.High': 'ハイ',
+                'mbitMore..Low': '0',
+                'mbitMore.digitalValueMenu.High': '1',
                 'mbitMore.axisMenu.x': 'x',
                 'mbitMore.axisMenu.y': 'y',
                 'mbitMore.axisMenu.z': 'z',
