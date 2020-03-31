@@ -1963,6 +1963,16 @@ class MbitMoreBlocks {
                             defaultValue: 0
                         }
                     }
+                },
+                '---',
+                {
+                    opcode: 'whenConnected',
+                    text: formatMessage({
+                        id: 'mbitMore.whenConnected',
+                        default: 'when micro:bit connected',
+                        description: 'when a micro:bit connected'
+                    }),
+                    blockType: BlockType.HAT
                 }
             ],
             menus: {
@@ -2518,6 +2528,14 @@ class MbitMoreBlocks {
         this.lastEvents[pinIndex][event] = timestamp;
     }
 
+    /**
+     * Test whether a micro:bit connected.
+     * @return {boolean} - true if a micro:bit connected.
+     */
+    whenConnected () {
+        return this._peripheral.isConnected();
+    }
+
     setupTranslations () {
         const localeSetup = formatMessage.setup();
         const extTranslations = {
@@ -2559,7 +2577,8 @@ class MbitMoreBlocks {
                 'mbitMore.pinEventTimestampMenu.rise': 'ライズの時刻',
                 'mbitMore.pinEventTimestampMenu.fall': 'フォールの時刻',
                 'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスの期間',
-                'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスの期間'
+                'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスの期間',
+                'mbitMore.whenConnected': 'micro:bit がつながったとき'
             },
             'ja-Hira': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
@@ -2599,7 +2618,8 @@ class MbitMoreBlocks {
                 'mbitMore.pinEventTimestampMenu.rise': 'ライズのじかん',
                 'mbitMore.pinEventTimestampMenu.fall': 'フォールのじかん',
                 'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスのきかん',
-                'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスのきかん'
+                'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスのきかん',
+                'mbitMore.whenConnected': 'micro:bit がつながったとき'
             },
             'pt-br': {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
