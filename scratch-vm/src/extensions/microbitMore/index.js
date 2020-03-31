@@ -23,17 +23,26 @@ const BLECommand = {
     CMD_PIN_CONFIG: 0x80,
     CMD_DISPLAY_TEXT: 0x81,
     CMD_DISPLAY_LED: 0x82,
-    CMD_PROTOCOL_SET: 0x90,
-    CMD_PIN_PULL_UP: 0x91,
-    CMD_PIN_PULL_DOWN: 0x92,
-    CMD_PIN_OUTPUT: 0x93,
-    CMD_PIN_PWM: 0x94,
-    CMD_PIN_SERVO: 0x95,
-    CMD_PIN_TOUCH: 0x96,
-    CMD_EVENT_SET: 0x97,
-    CMD_SHARED_DATA_SET: 0x98
+    CMD_PROTOCOL: 0x90,
+    CMD_PIN: 0x91,
+    CMD_SHARED_DATA: 0x92
 };
 
+const MBitMorePinCommand =
+{
+    OUTPUT: 0x01,
+    PWM: 0x02,
+    SERVO: 0x03,
+    PULL: 0x04,
+    EVENT: 0x05,
+    TOUCH: 0x06
+};
+
+const MBitMorePinMode = {
+    PullNone: 0,
+    PullUp: 1,
+    PullDown: 2
+};
 
 /**
  * Enum for micro:bit BLE command protocol v0.
@@ -126,9 +135,9 @@ const MBITMORE_SERVICE = {
  * @enum {string}
  */
 const PinMode = {
+    PULL_NONE: 'pullNone',
     PULL_UP: 'pullUp',
-    PULL_DOWN: 'pullDown',
-    TOUCH: 'touch'
+    PULL_DOWN: 'pullDown'
 };
 
 /**
@@ -288,32 +297,65 @@ class MbitMore {
     }
 
     setPinMode (pinIndex, mode, util) {
+        if (!this._useMbitMoreService) {
+            switch (mode) {
+            case PinMode.PULL_UP:
+                this.send(BLECommandV0.CMD_PIN_INPUT,
+                    new Uint8Array([pinIndex]), util);
+                break;
+            case PinMode.PULL_DOWN:
+                this.send(BLECommandV0.CMD_PIN_INPUT,
+                    new Uint8Array([pinIndex]), util);
+                break;
+            default:
+                break;
+            }
+            return;
+        }
         switch (mode) {
+        case PinMode.PULL_NONE:
+            this.send(BLECommand.CMD_PIN,
+                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullNone]), util);
+            break;
         case PinMode.PULL_UP:
-            this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_PULL_UP : BLECommandV0.CMD_PIN_INPUT,
-                new Uint8Array([pinIndex]), util);
+            this.send(BLECommand.CMD_PIN,
+                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullUp]), util);
             break;
-
         case PinMode.PULL_DOWN:
-            this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_PULL_DOWN : BLECommandV0.CMD_PIN_INPUT,
-                new Uint8Array([pinIndex]), util);
+            this.send(BLECommand.CMD_PIN,
+                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullDown]), util);
             break;
-
         default:
             break;
         }
+
     }
 
     setPinOutput (pinIndex, level, util) {
-        this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_OUTPUT : BLECommandV0.CMD_PIN_OUTPUT,
-            new Uint8Array([pinIndex, level]), util);
+        if (!this._useMbitMoreService) {
+            this.send(BLECommandV0.CMD_PIN_OUTPUT,
+                new Uint8Array([pinIndex, level]), util);
+            return;
+        }
+        this.send(BLECommand.CMD_PIN,
+            new Uint8Array([MBitMorePinCommand.OUTPUT, pinIndex, level]), util);
     }
 
     setPinPWM (pinIndex, level, util) {
         const dataView = new DataView(new ArrayBuffer(2));
         dataView.setUint16(0, level, true);
-        this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_PWM : BLECommandV0.CMD_PIN_PWM,
+        if (!this._useMbitMoreService) {
+            this.send(BLECommandV0.CMD_PIN_PWM,
+                new Uint8Array([
+                    pinIndex,
+                    dataView.getUint8(0),
+                    dataView.getUint8(1)]),
+                util);
+            return;
+        }
+        this.send(BLECommand.CMD_PIN,
             new Uint8Array([
+                MBitMorePinCommand.PWM,
                 pinIndex,
                 dataView.getUint8(0),
                 dataView.getUint8(1)]),
@@ -326,8 +368,21 @@ class MbitMore {
         const dataView = new DataView(new ArrayBuffer(4));
         dataView.setUint16(0, range, true);
         dataView.setUint16(2, center, true);
-        this.send(this._useMbitMoreService ? BLECommand.CMD_PIN_SERVO : BLECommandV0.CMD_PIN_SERVO,
+        if (!this._useMbitMoreService) {
+            this.send(BLECommandV0.CMD_PIN_SERVO,
+                new Uint8Array([
+                    pinIndex,
+                    angle,
+                    dataView.getUint8(0),
+                    dataView.getUint8(1),
+                    dataView.getUint8(2),
+                    dataView.getUint8(3)]),
+                util);
+            return;
+        }
+        this.send(BLECommand.CMD_PIN,
             new Uint8Array([
+                MBitMorePinCommand.SERVO,
                 pinIndex,
                 angle,
                 dataView.getUint8(0),
@@ -1260,6 +1315,14 @@ class MbitMoreBlocks {
         return [
             {
                 text: formatMessage({
+                    id: 'mbitMore.pinModeMenu.pullNone',
+                    default: 'pull none',
+                    description: 'label for pullNone mode'
+                }),
+                value: PinMode.PULL_NONE
+            },
+            {
+                text: formatMessage({
                     id: 'mbitMore.pinModeMenu.pullUp',
                     default: 'pull up',
                     description: 'label for pullUp mode'
@@ -1725,7 +1788,7 @@ class MbitMoreBlocks {
                         MODE: {
                             type: ArgumentType.STRING,
                             menu: 'pinMode',
-                            defaultValue: PinMode.ANSLOG_IN
+                            defaultValue: PinMode.PULL_UP
                         }
                     }
                 },
@@ -2480,6 +2543,7 @@ class MbitMoreBlocks {
                 'mbitMore.axisMenu.y': 'y',
                 'mbitMore.axisMenu.z': 'z',
                 'mbitMore.axisMenu.absolute': '大きさ',
+                'mbitMore.pinModeMenu.pullNone': '開放',
                 'mbitMore.pinModeMenu.pullUp': 'プルアップ',
                 'mbitMore.pinModeMenu.pullDown': 'プルダウン',
                 'mbitMore.setPinEventType': 'ピン [PIN] で [EVENT_TYPE] ',
@@ -2519,6 +2583,7 @@ class MbitMoreBlocks {
                 'mbitMore.axisMenu.y': 'y',
                 'mbitMore.axisMenu.z': 'z',
                 'mbitMore.axisMenu.absolute': 'おおきさ',
+                'mbitMore.pinModeMenu.pullNone': 'かいほう',
                 'mbitMore.pinModeMenu.pullUp': 'プルアップ',
                 'mbitMore.pinModeMenu.pullDown': 'プルダウン',
                 'mbitMore.setPinEventType': 'ピン [PIN] で [EVENT_TYPE]',
