@@ -941,32 +941,6 @@ class MbitMore {
     }
 
     /**
-     * Return the analog value of the pin.
-     * @param {number} pin - the pin to check.
-     * @return {Promise} - Promise to get the latest value of analog input.
-     */
-    getAnalogValue (pin) {
-        if (!this.isConnected()) {
-            return Promise.resolve(0);
-        }
-        if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.analogValue[pin]);
-        }
-        return this._ble.read(
-            MBITMORE_SERVICE.ID,
-            MBITMORE_SERVICE.ANSLOG_IN,
-            false)
-            .then(result => {
-                const data = Base64Util.base64ToUint8Array(result.message);
-                const dataView = new DataView(data.buffer, 0);
-                this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(0, true);
-                this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(2, true);
-                this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(4, true);
-                return this._sensors.analogValue[pin];
-            });
-    }
-
-    /**
      * Return the value of the shared data.
      * @param {number} index - the shared data index.
      * @return {number} - the latest value received for the shared data.
