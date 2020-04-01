@@ -269,7 +269,7 @@ class MbitMore {
         this.digitalValuesUpdateInterval = 50; // milli-seconds
         this.digitalValuesLastUpdated = Date.now();
 
-        this.analogInUpdateInterval = 50; // milli-seconds
+        this.analogInUpdateInterval = 200; // milli-seconds
         this.analogInLastUpdated = Date.now();
 
         this.sensorsUpdateInterval = 50; // milli-seconds
@@ -449,9 +449,16 @@ class MbitMore {
             .then(result => {
                 const data = Base64Util.base64ToUint8Array(result.message);
                 const dataView = new DataView(data.buffer, 0);
-                this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(0, true);
-                this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(2, true);
-                this._sensors.analogValue[this.analogIn[2]] = dataView.getUint16(4, true);
+                const value1 = dataView.getUint16(0, true);
+                const value2 = dataView.getUint16(2, true);
+                const value3 = dataView.getUint16(4, true);
+                // This invalid values will come up sometimes but the cause is unknown.
+                if (value1 === 255 && value2 === 255 && value3 === 255) {
+                    return this._sensors;
+                }
+                this._sensors.analogValue[this.analogIn[0]] = value1;
+                this._sensors.analogValue[this.analogIn[1]] = value2;
+                this._sensors.analogValue[this.analogIn[2]] = value3;
                 this.analogInLastUpdated = Date.now();
                 return this._sensors;
             });
