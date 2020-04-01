@@ -2521,7 +2521,7 @@ class MbitMoreBlocks {
         const localeSetup = formatMessage.setup();
         const extTranslations = {
             'ja': {
-                'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
+                'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
                 'mbitMore.lightLevel': '明るさ',
                 'mbitMore.compassHeading': '北からの角度',
                 'mbitMore.magneticForce': '磁力 [AXIS]',
@@ -2532,7 +2532,7 @@ class MbitMoreBlocks {
                 'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
                 'mbitMore.getSharedData': '共有データ [INDEX]',
                 'mbitMore.setSharedData': '共有データ [INDEX] を [VALUE] にする',
-                'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にする',
+                'mbitMore.setPinMode': 'ピン [PIN] を [MODE] 入力にする',
                 'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
                 'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] 度にする',
@@ -2559,10 +2559,10 @@ class MbitMoreBlocks {
                 'mbitMore.pinEventTimestampMenu.fall': 'フォールの時刻',
                 'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスの期間',
                 'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスの期間',
-                'mbitMore.whenConnected': 'micro:bit がつながったとき'
+                'mbitMore.whenConnected': 'micro:bit につながったとき'
             },
             'ja-Hira': {
-                'mbitMore.isPinConnected': 'ピン [PIN] がつながっているか?',
+                'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
                 'mbitMore.lightLevel': 'あかるさ',
                 'mbitMore.compassHeading': 'きたからのかくど',
                 'mbitMore.magneticForce': 'じりょく [AXIS]',
@@ -2573,7 +2573,7 @@ class MbitMoreBlocks {
                 'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
                 'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
                 'mbitMore.setSharedData': 'きょうゆうデータ [INDEX] を [VALUE] にする',
-                'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にする',
+                'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にゅうりょくにする',
                 'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
                 'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
                 'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
@@ -2600,7 +2600,7 @@ class MbitMoreBlocks {
                 'mbitMore.pinEventTimestampMenu.fall': 'フォールのじかん',
                 'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスのきかん',
                 'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスのきかん',
-                'mbitMore.whenConnected': 'micro:bit がつながったとき'
+                'mbitMore.whenConnected': 'micro:bit につながったとき'
             },
             'pt-br': {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
