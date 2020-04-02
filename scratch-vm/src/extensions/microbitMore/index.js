@@ -985,8 +985,9 @@ class MbitMore {
      * @param {object} util - utility object provided by the runtime.
     */
     setPinEventType (pinIndex, eventType, util) {
-        this.send(BLECommand.CMD_EVENT_SET,
+        this.send(BLECommand.CMD_PIN,
             new Uint8Array([
+                MBitMorePinCommand.EVENT,
                 pinIndex,
                 eventType]),
             util);
