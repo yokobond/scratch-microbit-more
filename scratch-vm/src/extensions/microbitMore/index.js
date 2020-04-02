@@ -365,18 +365,20 @@ class MbitMore {
     setPinServo (pinIndex, angle, range, center, util) {
         if (!range || range < 0) range = 0;
         if (!center || center < 0) center = 0;
-        const dataView = new DataView(new ArrayBuffer(4));
-        dataView.setUint16(0, range, true);
-        dataView.setUint16(2, center, true);
+        const dataView = new DataView(new ArrayBuffer(6));
+        dataView.setUint16(0, angle, true);
+        dataView.setUint16(2, range, true);
+        dataView.setUint16(4, center, true);
         if (!this._useMbitMoreService) {
             this.send(BLECommandV0.CMD_PIN_SERVO,
                 new Uint8Array([
                     pinIndex,
-                    angle,
                     dataView.getUint8(0),
                     dataView.getUint8(1),
                     dataView.getUint8(2),
-                    dataView.getUint8(3)]),
+                    dataView.getUint8(3),
+                    dataView.getUint8(4),
+                    dataView.getUint8(5)]),
                 util);
             return;
         }
@@ -384,11 +386,12 @@ class MbitMore {
             new Uint8Array([
                 MBitMorePinCommand.SERVO,
                 pinIndex,
-                angle,
                 dataView.getUint8(0),
                 dataView.getUint8(1),
                 dataView.getUint8(2),
-                dataView.getUint8(3)]),
+                dataView.getUint8(3),
+                dataView.getUint8(4),
+                dataView.getUint8(5)]),
             util);
     }
 
