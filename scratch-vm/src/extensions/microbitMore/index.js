@@ -1759,7 +1759,7 @@ class MbitMoreBlocks {
                     opcode: 'setPinMode',
                     text: formatMessage({
                         id: 'mbitMore.setPinMode',
-                        default: 'set pin [PIN] to [MODE]',
+                        default: 'set pin [PIN] to input [MODE]',
                         description: 'set a pin into the mode'
                     }),
                     blockType: BlockType.COMMAND,
