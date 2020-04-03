@@ -30,12 +30,12 @@ const BLECommand = {
 
 const MBitMorePinCommand =
 {
-    OUTPUT: 0x01,
-    PWM: 0x02,
-    SERVO: 0x03,
-    PULL: 0x04,
-    EVENT: 0x05,
-    TOUCH: 0x06
+    SET_OUTPUT: 0x01,
+    SET_PWM: 0x02,
+    SET_SERVO: 0x03,
+    SET_PULL: 0x04,
+    SET_EVENT: 0x05,
+    SET_TOUCH: 0x06
 };
 
 const MBitMorePinMode = {
@@ -315,15 +315,15 @@ class MbitMore {
         switch (mode) {
         case PinMode.PULL_NONE:
             this.send(BLECommand.CMD_PIN,
-                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullNone]), util);
+                new Uint8Array([MBitMorePinCommand.SET_PULL, pinIndex, MBitMorePinMode.PullNone]), util);
             break;
         case PinMode.PULL_UP:
             this.send(BLECommand.CMD_PIN,
-                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullUp]), util);
+                new Uint8Array([MBitMorePinCommand.SET_PULL, pinIndex, MBitMorePinMode.PullUp]), util);
             break;
         case PinMode.PULL_DOWN:
             this.send(BLECommand.CMD_PIN,
-                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullDown]), util);
+                new Uint8Array([MBitMorePinCommand.SET_PULL, pinIndex, MBitMorePinMode.PullDown]), util);
             break;
         default:
             break;
@@ -338,7 +338,7 @@ class MbitMore {
             return;
         }
         this.send(BLECommand.CMD_PIN,
-            new Uint8Array([MBitMorePinCommand.OUTPUT, pinIndex, level]), util);
+            new Uint8Array([MBitMorePinCommand.SET_OUTPUT, pinIndex, level]), util);
     }
 
     setPinPWM (pinIndex, level, util) {
@@ -355,7 +355,7 @@ class MbitMore {
         }
         this.send(BLECommand.CMD_PIN,
             new Uint8Array([
-                MBitMorePinCommand.PWM,
+                MBitMorePinCommand.SET_PWM,
                 pinIndex,
                 dataView.getUint8(0),
                 dataView.getUint8(1)]),
@@ -384,7 +384,7 @@ class MbitMore {
         }
         this.send(BLECommand.CMD_PIN,
             new Uint8Array([
-                MBitMorePinCommand.SERVO,
+                MBitMorePinCommand.SET_SERVO,
                 pinIndex,
                 dataView.getUint8(0),
                 dataView.getUint8(1),
@@ -987,7 +987,7 @@ class MbitMore {
     setPinEventType (pinIndex, eventType, util) {
         this.send(BLECommand.CMD_PIN,
             new Uint8Array([
-                MBitMorePinCommand.EVENT,
+                MBitMorePinCommand.SET_EVENT,
                 pinIndex,
                 eventType]),
             util);
