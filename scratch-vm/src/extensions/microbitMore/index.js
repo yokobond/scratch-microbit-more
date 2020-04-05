@@ -1438,6 +1438,30 @@ class MbitMoreBlocks {
     }
 
     /**
+     * @return {array} - Menu items for connection state.
+     */
+    get CONNECTION_STATE_MENU () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'mbitMore.connectionStateMenu.connected',
+                    default: 'connected',
+                    description: 'label for connected'
+                }),
+                value: 'connected'
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.connectionStateMenu.disconnected',
+                    default: 'disconnected',
+                    description: 'label for disconnected'
+                }),
+                value: 'disconnected'
+            }
+        ];
+    }
+
+    /**
      * Construct a set of MicroBit blocks.
      * @param {Runtime} runtime - the Scratch 3.0 runtime.
      */
@@ -1951,13 +1975,20 @@ class MbitMoreBlocks {
                 },
                 '---',
                 {
-                    opcode: 'whenConnected',
+                    opcode: 'whenConnectionChanged',
                     text: formatMessage({
-                        id: 'mbitMore.whenConnected',
-                        default: 'when micro:bit connected',
-                        description: 'when a micro:bit connected'
+                        id: 'mbitMore.whenConnectionChanged',
+                        default: 'when micro:bit [STATE]',
+                        description: 'when a micro:bit connection state changed'
                     }),
-                    blockType: BlockType.HAT
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        STATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'connectionStateMenu',
+                            defaultValue: 'connected'
+                        }
+                    }
                 }
             ],
             menus: {
@@ -2016,6 +2047,10 @@ class MbitMoreBlocks {
                 pinEventTimestampMenu: {
                     acceptReporters: false,
                     items: this.PIN_EVENT_TIMESTAMP_MENU
+                },
+                connectionStateMenu: {
+                    acceptReporters: false,
+                    items: this.CONNECTION_STATE_MENU
                 }
             }
         };
@@ -2515,10 +2550,13 @@ class MbitMoreBlocks {
 
     /**
      * Test whether a micro:bit connected.
-     * @return {boolean} - true if a micro:bit connected.
+     * @param {object} args - the block's arguments.
+     * @property {string} args.STATE - the state of connection to check.
+     * @return {boolean} - true if the state is matched.
      */
-    whenConnected () {
-        return this._peripheral.isConnected();
+    whenConnectionChanged (args) {
+        const state = (args.STATE === 'connected');
+        return (state === this._peripheral.isConnected());
     }
 
     setupTranslations () {
@@ -2563,7 +2601,9 @@ class MbitMoreBlocks {
                 'mbitMore.pinEventTimestampMenu.fall': 'フォールの時刻',
                 'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスの期間',
                 'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスの期間',
-                'mbitMore.whenConnected': 'micro:bit につながったとき'
+                'mbitMore.connectionStateMenu.connected': 'つながった',
+                'mbitMore.connectionStateMenu.disconnected': '切れた',
+                'mbitMore.whenConnectionChanged': 'micro:bit と[STATE]とき'
             },
             'ja-Hira': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
@@ -2604,7 +2644,9 @@ class MbitMoreBlocks {
                 'mbitMore.pinEventTimestampMenu.fall': 'フォールのじかん',
                 'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスのきかん',
                 'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスのきかん',
-                'mbitMore.whenConnected': 'micro:bit につながったとき'
+                'mbitMore.connectionStateMenu.connected': 'つながった',
+                'mbitMore.connectionStateMenu.disconnected': 'きれた',
+                'mbitMore.whenConnectionChanged': 'micro:bit と[STATE]とき'
             },
             'pt-br': {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
