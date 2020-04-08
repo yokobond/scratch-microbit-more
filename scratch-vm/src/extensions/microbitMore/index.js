@@ -30,12 +30,12 @@ const BLECommand = {
 
 const MBitMorePinCommand =
 {
-    OUTPUT: 0x01,
-    PWM: 0x02,
-    SERVO: 0x03,
-    PULL: 0x04,
-    EVENT: 0x05,
-    TOUCH: 0x06
+    SET_OUTPUT: 0x01,
+    SET_PWM: 0x02,
+    SET_SERVO: 0x03,
+    SET_PULL: 0x04,
+    SET_EVENT: 0x05,
+    SET_TOUCH: 0x06
 };
 
 const MBitMorePinMode = {
@@ -315,15 +315,15 @@ class MbitMore {
         switch (mode) {
         case PinMode.PULL_NONE:
             this.send(BLECommand.CMD_PIN,
-                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullNone]), util);
+                new Uint8Array([MBitMorePinCommand.SET_PULL, pinIndex, MBitMorePinMode.PullNone]), util);
             break;
         case PinMode.PULL_UP:
             this.send(BLECommand.CMD_PIN,
-                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullUp]), util);
+                new Uint8Array([MBitMorePinCommand.SET_PULL, pinIndex, MBitMorePinMode.PullUp]), util);
             break;
         case PinMode.PULL_DOWN:
             this.send(BLECommand.CMD_PIN,
-                new Uint8Array([MBitMorePinCommand.PULL, pinIndex, MBitMorePinMode.PullDown]), util);
+                new Uint8Array([MBitMorePinCommand.SET_PULL, pinIndex, MBitMorePinMode.PullDown]), util);
             break;
         default:
             break;
@@ -338,7 +338,7 @@ class MbitMore {
             return;
         }
         this.send(BLECommand.CMD_PIN,
-            new Uint8Array([MBitMorePinCommand.OUTPUT, pinIndex, level]), util);
+            new Uint8Array([MBitMorePinCommand.SET_OUTPUT, pinIndex, level]), util);
     }
 
     setPinPWM (pinIndex, level, util) {
@@ -355,7 +355,7 @@ class MbitMore {
         }
         this.send(BLECommand.CMD_PIN,
             new Uint8Array([
-                MBitMorePinCommand.PWM,
+                MBitMorePinCommand.SET_PWM,
                 pinIndex,
                 dataView.getUint8(0),
                 dataView.getUint8(1)]),
@@ -384,7 +384,7 @@ class MbitMore {
         }
         this.send(BLECommand.CMD_PIN,
             new Uint8Array([
-                MBitMorePinCommand.SERVO,
+                MBitMorePinCommand.SET_SERVO,
                 pinIndex,
                 dataView.getUint8(0),
                 dataView.getUint8(1),
@@ -901,25 +901,23 @@ class MbitMore {
     }
 
     /**
+     * Return whether the pin is connected to ground or not.
      * @param {number} pin - the pin to check touch state.
-     * @return {number} - the latest value received for the touch pin states.
-     * @private
+     * @return {boolean} - true if the pin is connected to GND.
      */
-    _checkPinState (pin) {
+    isPinOnGrand (pin) {
         if (pin > 2) {
             if (!this._useMbitMoreService) {
                 return this._sensors.digitalValue[pin];
             }
             if ((Date.now() - this.digitalValuesLastUpdated) > this.digitalValuesUpdateInterval) {
-                // Update for next check.
+                // Return the last value immediately and start update for next check.
                 this.updateDigitalValue().then();
                 this.digitalValuesLastUpdated = Date.now();
-                return this._sensors.digitalValue[pin];
             }
-            return this._sensors.digitalValue[pin];
-            
+            return this._sensors.digitalValue[pin] === 0;
         }
-        return this._sensors.touchPins[pin];
+        return this._sensors.touchPins[pin] !== 0;
     }
 
     /**
@@ -941,6 +939,22 @@ class MbitMore {
                 this.digitalValuesLastUpdated = Date.now();
                 return this._sensors;
             });
+    }
+
+    /**
+     * Read digital input from the pin.
+     * @param {number} pin - the pin to read.
+     * @return {Promise} - a Promise that resolves digital input value of the pin.
+     */
+    readDigitalValue (pin) {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.digitalValue[pin]);
+        }
+        return this.updateDigitalValue()
+            .then(() => this._sensors.digitalValue[pin]);
     }
 
     /**
@@ -985,8 +999,9 @@ class MbitMore {
      * @param {object} util - utility object provided by the runtime.
     */
     setPinEventType (pinIndex, eventType, util) {
-        this.send(BLECommand.CMD_EVENT_SET,
+        this.send(BLECommand.CMD_PIN,
             new Uint8Array([
+                MBitMorePinCommand.SET_EVENT,
                 pinIndex,
                 eventType]),
             util);
@@ -1437,6 +1452,30 @@ class MbitMoreBlocks {
     }
 
     /**
+     * @return {array} - Menu items for connection state.
+     */
+    get CONNECTION_STATE_MENU () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'mbitMore.connectionStateMenu.connected',
+                    default: 'connected',
+                    description: 'label for connected'
+                }),
+                value: 'connected'
+            },
+            {
+                text: formatMessage({
+                    id: 'mbitMore.connectionStateMenu.disconnected',
+                    default: 'disconnected',
+                    description: 'label for disconnected'
+                }),
+                value: 'disconnected'
+            }
+        ];
+    }
+
+    /**
      * Construct a set of MicroBit blocks.
      * @param {Runtime} runtime - the Scratch 3.0 runtime.
      */
@@ -1759,7 +1798,7 @@ class MbitMoreBlocks {
                     opcode: 'setPinMode',
                     text: formatMessage({
                         id: 'mbitMore.setPinMode',
-                        default: 'set pin [PIN] to [MODE]',
+                        default: 'set pin [PIN] to input [MODE]',
                         description: 'set a pin into the mode'
                     }),
                     blockType: BlockType.COMMAND,
@@ -1950,13 +1989,20 @@ class MbitMoreBlocks {
                 },
                 '---',
                 {
-                    opcode: 'whenConnected',
+                    opcode: 'whenConnectionChanged',
                     text: formatMessage({
-                        id: 'mbitMore.whenConnected',
-                        default: 'when micro:bit connected',
-                        description: 'when a micro:bit connected'
+                        id: 'mbitMore.whenConnectionChanged',
+                        default: 'when micro:bit [STATE]',
+                        description: 'when a micro:bit connection state changed'
                     }),
-                    blockType: BlockType.HAT
+                    blockType: BlockType.HAT,
+                    arguments: {
+                        STATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'connectionStateMenu',
+                            defaultValue: 'connected'
+                        }
+                    }
                 }
             ],
             menus: {
@@ -2015,6 +2061,10 @@ class MbitMoreBlocks {
                 pinEventTimestampMenu: {
                     acceptReporters: false,
                     items: this.PIN_EVENT_TIMESTAMP_MENU
+                },
+                connectionStateMenu: {
+                    acceptReporters: false,
+                    items: this.CONNECTION_STATE_MENU
                 }
             }
         };
@@ -2212,7 +2262,7 @@ class MbitMoreBlocks {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (!this.GPIO_MENU.includes(pin.toString())) return false;
-        return this._peripheral._checkPinState(pin);
+        return this._peripheral.isPinOnGrand(pin);
     }
 
     // Mbit More extended functions
@@ -2226,7 +2276,7 @@ class MbitMoreBlocks {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return false;
         if (!this.GPIO_MENU.includes(pin.toString())) return false;
-        return this._peripheral._checkPinState(pin);
+        return this._peripheral.isPinOnGrand(pin);
     }
 
     /**
@@ -2260,13 +2310,13 @@ class MbitMoreBlocks {
     /**
      * Return digital value of the pin.
      * @param {object} args - the block's arguments.
-     * @return {boolean} - true if the pin is connected.
+     * @return {Promise} - a Promise that resolves digital input value of the pin.
      */
     getDigitalValue (args) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return 0;
         if (!this.GPIO_MENU.includes(pin.toString())) return 0;
-        return (this._peripheral._checkPinState(pin) === 0) ? 1 : 0;
+        return (this._peripheral.readDigitalValue(pin));
     }
 
     /**
@@ -2514,10 +2564,13 @@ class MbitMoreBlocks {
 
     /**
      * Test whether a micro:bit connected.
-     * @return {boolean} - true if a micro:bit connected.
+     * @param {object} args - the block's arguments.
+     * @property {string} args.STATE - the state of connection to check.
+     * @return {boolean} - true if the state is matched.
      */
-    whenConnected () {
-        return this._peripheral.isConnected();
+    whenConnectionChanged (args) {
+        const state = (args.STATE === 'connected');
+        return (state === this._peripheral.isConnected());
     }
 
     setupTranslations () {
@@ -2562,7 +2615,9 @@ class MbitMoreBlocks {
                 'mbitMore.pinEventTimestampMenu.fall': 'フォールの時刻',
                 'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスの期間',
                 'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスの期間',
-                'mbitMore.whenConnected': 'micro:bit につながったとき'
+                'mbitMore.connectionStateMenu.connected': 'つながった',
+                'mbitMore.connectionStateMenu.disconnected': '切れた',
+                'mbitMore.whenConnectionChanged': 'micro:bit と[STATE]とき'
             },
             'ja-Hira': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
@@ -2603,7 +2658,9 @@ class MbitMoreBlocks {
                 'mbitMore.pinEventTimestampMenu.fall': 'フォールのじかん',
                 'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスのきかん',
                 'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスのきかん',
-                'mbitMore.whenConnected': 'micro:bit につながったとき'
+                'mbitMore.connectionStateMenu.connected': 'つながった',
+                'mbitMore.connectionStateMenu.disconnected': 'きれた',
+                'mbitMore.whenConnectionChanged': 'micro:bit と[STATE]とき'
             },
             'pt-br': {
                 'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
