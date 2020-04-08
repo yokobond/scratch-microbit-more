@@ -901,25 +901,23 @@ class MbitMore {
     }
 
     /**
+     * Return whether the pin is connected to ground or not.
      * @param {number} pin - the pin to check touch state.
-     * @return {number} - the latest value received for the touch pin states.
-     * @private
+     * @return {boolean} - true if the pin is connected to GND.
      */
-    _checkPinState (pin) {
+    isPinOnGrand (pin) {
         if (pin > 2) {
             if (!this._useMbitMoreService) {
                 return this._sensors.digitalValue[pin];
             }
             if ((Date.now() - this.digitalValuesLastUpdated) > this.digitalValuesUpdateInterval) {
-                // Update for next check.
+                // Return the last value immediately and start update for next check.
                 this.updateDigitalValue().then();
                 this.digitalValuesLastUpdated = Date.now();
-                return this._sensors.digitalValue[pin];
             }
-            return this._sensors.digitalValue[pin];
-            
+            return this._sensors.digitalValue[pin] === 0;
         }
-        return this._sensors.touchPins[pin];
+        return this._sensors.touchPins[pin] !== 0;
     }
 
     /**
@@ -2248,7 +2246,7 @@ class MbitMoreBlocks {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return;
         if (!this.GPIO_MENU.includes(pin.toString())) return false;
-        return this._peripheral._checkPinState(pin);
+        return this._peripheral.isPinOnGrand(pin);
     }
 
     // Mbit More extended functions
@@ -2262,7 +2260,7 @@ class MbitMoreBlocks {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return false;
         if (!this.GPIO_MENU.includes(pin.toString())) return false;
-        return this._peripheral._checkPinState(pin);
+        return this._peripheral.isPinOnGrand(pin);
     }
 
     /**
