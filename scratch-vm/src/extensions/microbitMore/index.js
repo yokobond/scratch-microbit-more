@@ -942,6 +942,22 @@ class MbitMore {
     }
 
     /**
+     * Read digital input from the pin.
+     * @param {number} pin - the pin to read.
+     * @return {Promise} - a Promise that resolves digital input value of the pin.
+     */
+    readDigitalValue (pin) {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.digitalValue[pin]);
+        }
+        return this.updateDigitalValue()
+            .then(() => this._sensors.digitalValue[pin]);
+    }
+
+    /**
      * Return the value of the shared data.
      * @param {number} index - the shared data index.
      * @return {number} - the latest value received for the shared data.
@@ -2294,13 +2310,13 @@ class MbitMoreBlocks {
     /**
      * Return digital value of the pin.
      * @param {object} args - the block's arguments.
-     * @return {boolean} - true if the pin is connected.
+     * @return {Promise} - a Promise that resolves digital input value of the pin.
      */
     getDigitalValue (args) {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return 0;
         if (!this.GPIO_MENU.includes(pin.toString())) return 0;
-        return (this._peripheral._checkPinState(pin) === 0) ? 1 : 0;
+        return (this._peripheral.readDigitalValue(pin));
     }
 
     /**
