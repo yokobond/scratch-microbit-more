@@ -1255,7 +1255,7 @@ class MbitMoreBlocks {
             {
                 text: formatMessage({
                     id: 'mbitMore.digitalValueMenu.Low',
-                    default: 'Low',
+                    default: '0',
                     description: 'label for low value in digital output menu for microbit more extension'
                 }),
                 value: DigitalValue.LOW
@@ -1263,7 +1263,7 @@ class MbitMoreBlocks {
             {
                 text: formatMessage({
                     id: 'mbitMore.digitalValueMenu.High',
-                    default: 'High',
+                    default: '1',
                     description: 'label for high value in digital output menu for microbit more extension'
                 }),
                 value: DigitalValue.HIGH}
