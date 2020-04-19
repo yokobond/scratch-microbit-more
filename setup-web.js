@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const ExtRoot = path.resolve(__dirname);
 const GuiRoot = path.resolve(__dirname, '../scratch-gui');
-const VmRoot = path.jion(GuiRoot, 'node_modules', 'scratch-vm');
+const VmRoot = path.join(GuiRoot, 'node_modules', 'scratch-vm');
 
 const ExtId = 'microbitMore';
 const VmExtDirName = 'microbitMore';
