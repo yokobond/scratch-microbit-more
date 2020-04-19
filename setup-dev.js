@@ -10,10 +10,10 @@ const DesktopRoot = path.resolve(__dirname, '../scratch-desktop');
 const ExtId = 'microbitMore';
 const VmExtDirName = 'microbitMore';
 
-const VmExtPath = 'src/extensions/' + VmExtDirName;
-const GuiExtPath = 'src/lib/libraries/extensions/' + ExtId;
-const VmExtManager = 'src/extension-support/extension-manager.js'
-const GuiExtIndex = 'src/lib/libraries/extensions/index.jsx'
+const VmExtPath = path.join('src', 'extensions', VmExtDirName);
+const GuiExtPath = path.join('src', 'lib', 'libraries', 'extensions', ExtId);
+const VmExtManager = path.join('src', 'extension-support', 'extension-manager.js');
+const GuiExtIndex = path.join('src', 'lib', 'libraries', 'extensions', 'index.jsx');
 const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'gui_ext_index-code.jsx'), 'utf-8');
 const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
 const ScratchDesktopIcnsFile = path.join('buildResources', 'ScratchDesktop.icns');
@@ -62,7 +62,7 @@ let managerCode = fs.readFileSync(path.resolve(path.join(VmRoot, VmExtManager)),
 if (managerCode.includes(ExtId)) {
     console.log(`Already registered in manager: ${ExtId}`);
 } else {
-    fs.copyFileSync(path.resolve(path.join(VmRoot, VmExtManager)), path.resolve(path.join(VmRoot, VmExtManager + '_orig')));
+    fs.copyFileSync(path.resolve(path.join(VmRoot, VmExtManager)), path.resolve(path.join(VmRoot, `${VmExtManager}_orig`)));
     managerCode = managerCode.replace(/builtinExtensions = {[\s\S]*?};/, `$&\n\nbuiltinExtensions.${ExtId} = () => require('../extensions/${VmExtDirName}');`);
     fs.writeFileSync(path.resolve(path.join(VmRoot, VmExtManager)), managerCode);
     console.log(`Registered in manager: ${ExtId}`);
@@ -90,11 +90,11 @@ let indexCode = fs.readFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), '
 if (indexCode.includes(ExtId)) {
     console.log(`Already added to extrnsion list: ${ExtId}`);
 } else {
-    fs.copyFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), path.resolve(path.join(GuiRoot, GuiExtIndex + '_orig')));
+    fs.copyFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), path.resolve(path.join(GuiRoot, `${GuiExtIndex}_orig`)));
     indexCode = indexCode.replace(/^.*export default\s+\[\s*$/m,
-        GuiExtIndexConfig.match(/<icon>.*[\r\n]+([\s\S]*)$[\r\n].*<\/icon>/mi)[1]
-        + '\n\n$&\n'
-        + GuiExtIndexConfig.match(/<configuration>.*[\r\n]+([\s\S]*)$[\r\n].*<\/configuration>/mi)[1]);
+        `${GuiExtIndexConfig.match(/<icon>.*[\r\n]+([\s\S]*)$[\r\n].*<\/icon>/mi)[1]
+        }\n\n$&\n${
+            GuiExtIndexConfig.match(/<configuration>.*[\r\n]+([\s\S]*)$[\r\n].*<\/configuration>/mi)[1]}`);
     fs.writeFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), indexCode);
     console.log(`Added to extrnsion list: ${ExtId}`);
 }
