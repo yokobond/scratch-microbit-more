@@ -68,15 +68,6 @@ if (managerCode.includes(ExtId)) {
     console.log(`Registered in manager: ${ExtId}`);
 }
 
-// Applay patch to scratch-vm
-try {
-    stdout = execSync(`cd ${VmRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'offline-websoket.patch')}`);
-    console.log(`stdout: ${stdout.toString()}`);
-} catch (err) {
-    // already applyed
-    console.error(err);
-}
-
 // Make symbolic link in scratch-gui. 
 try {
     fs.symlinkSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiExtPath)), path.resolve(path.join(GuiRoot, GuiExtPath)));
@@ -113,6 +104,15 @@ stdout = execSync(`cd ${GuiRoot} && npm link scratch-vm`);
 console.log(`stdout: ${stdout.toString()}`);
 
 if (desktop) {
+    // Applay patch to scratch-vm
+    try {
+        stdout = execSync(`cd ${VmRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'offline-websoket.patch')}`);
+        console.log(`stdout: ${stdout.toString()}`);
+    } catch (err) {
+        // already applyed
+        console.error(err);
+    }
+
     // Change logo image of scratch-desktop
     fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopIcnsFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopIcnsFile)));
     fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopIcoFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopIcoFile)));
