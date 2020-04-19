@@ -14,15 +14,19 @@ jobs:
         with:
           repository: LLK/scratch-gui
           ref: develop
+          path: ./scratch-gui
       - run: npm install
+        working-directory: ./scratch-gui
       - uses: actions/checkout@v2
         with:
-          path: ./microbitMore
-      - run: sh ./microbitMore/install.sh
+          path: ./scratch-microbit-more
+      - run: node ./setup-web.js
+        working-directory: ./scratch-microbit-more
       - run: npm run build
-      - run: cp ./microbitMore/site/index.html ./build/index.html
-      - run: cp ./microbitMore/site/favicon.ico ./build/static/favicon.ico
+        working-directory: ./scratch-gui
+      - run: cp ./scratch-microbit-more/site/index.html ./scratch-gui/build/index.html
+      - run: cp ./scratch-microbit-more/site/favicon.ico ./scratch-gui/build/static/favicon.ico
       - uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_dir: ./build
+          publish_dir: ./scratch-gui/build
