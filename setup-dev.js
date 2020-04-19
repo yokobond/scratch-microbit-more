@@ -14,6 +14,7 @@ const GuiExtPath = 'src/lib/libraries/extensions/' + ExtId;
 const VmExtManager = 'src/extension-support/extension-manager.js'
 const GuiExtIndex = 'src/lib/libraries/extensions/index.jsx'
 const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'gui_ext_index-code.jsx'), 'utf-8');
+const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
 
 // Make symbolic link in scratch-vm. 
 try {
@@ -70,6 +71,9 @@ if (indexCode.includes(ExtId)) {
     fs.writeFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), indexCode);
     console.log(`Added to extrnsion list: ${ExtId}`);
 }
+
+// Change logo image of scratch-gui
+fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiMenuBarLogoFile)), path.resolve(path.join(GuiRoot, GuiMenuBarLogoFile)));
 
 // Use local repositories.
 let stdout = execSync(`cd ${VmRoot} && npm link`);
