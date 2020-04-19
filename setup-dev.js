@@ -2,9 +2,9 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process')
 
-const ExtRoot = '.';
-const VmRoot = '../scratch-vm';
-const GuiRoot = '../scratch-gui';
+const ExtRoot = path.resolve(__dirname);
+const VmRoot = path.resolve(__dirname, '../scratch-vm');
+const GuiRoot = path.resolve(__dirname, '../scratch-gui');
 
 const ExtId = 'microbitMore';
 const VmExtDirName = 'microbitMore';
