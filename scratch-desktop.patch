@@ -1,0 +1,90 @@
+diff --git a/electron-builder.yaml b/electron-builder.yaml
+index 7382f39..80fc014 100644
+--- a/electron-builder.yaml
++++ b/electron-builder.yaml
+@@ -1,8 +1,8 @@
+ directories:
+   buildResources: buildResources
+   output: dist
+-appId: edu.mit.scratch.scratch-desktop
+-productName: "Scratch Desktop"
++appId: com.yengawa.mbitmore
++productName: "Microbit More Desktop"
+ afterSign: "scripts/afterSign.js"
+ mac:
+   category: public.app-category.education
+diff --git a/package.json b/package.json
+index 7923115..dc361c3 100644
+--- a/package.json
++++ b/package.json
+@@ -1,9 +1,9 @@
+ {
+-  "name": "scratch-desktop",
+-  "productName": "Scratch Desktop",
+-  "description": "Scratch 3.0 as a self-contained desktop application",
+-  "author": "Scratch Foundation",
+-  "version": "3.10.1",
++  "name": "microbit-more-desktop",
++  "productName": "Microbit More Desktop",
++  "description": "Scratch 3.0 desktop application with Microbit-More extension",
++  "author": "Koji Yokokawa",
++  "version": "0.5.0",
+   "license": "BSD-3-Clause",
+   "scripts": {
+     "start": "electron-webpack dev --bail --display-error-details --env.minify=false",
+diff --git a/scripts/afterSign.js b/scripts/afterSign.js
+index d544191..1f939b1 100644
+--- a/scripts/afterSign.js
++++ b/scripts/afterSign.js
+@@ -2,7 +2,7 @@ const {notarize} = require('electron-notarize');
+ 
+ const notarizeMacBuild = async function (context) {
+     // keep this in sync with appId in the electron-builder config
+-    const appId = 'edu.mit.scratch.scratch-desktop';
++    const appId = 'com.yengawa.mbitmore';
+ 
+     if (!process.env.AC_USERNAME) {
+         throw new Error(
+diff --git a/src/main/index.js b/src/main/index.js
+index 5758b44..55cf8f0 100644
+--- a/src/main/index.js
++++ b/src/main/index.js
+@@ -167,7 +167,7 @@ const createAboutWindow = () => {
+         height: 400,
+         parent: _windows.main,
+         search: 'route=about',
+-        title: 'About Scratch Desktop'
++        title: 'About Microbit More Desktop'
+     });
+     return window;
+ };
+@@ -184,7 +184,7 @@ const createMainWindow = () => {
+     const window = createWindow({
+         width: defaultSize.width,
+         height: defaultSize.height,
+-        title: 'Scratch Desktop'
++        title: 'Microbit More Desktop'
+     });
+     const webContents = window.webContents;
+ 
+@@ -311,3 +311,5 @@ app.on('ready', () => {
+ ipcMain.on('open-about-window', () => {
+     _windows.about.show();
+ });
++
++app.commandLine.appendSwitch('ignore-certificate-errors');
+\ No newline at end of file
+diff --git a/src/renderer/app.jsx b/src/renderer/app.jsx
+index 49ff284..7f2a549 100644
+--- a/src/renderer/app.jsx
++++ b/src/renderer/app.jsx
+@@ -11,6 +11,9 @@ import styles from './app.css';
+ 
+ const defaultProjectId = 0;
+ 
++// Use localhost as hostname of Scratch Link websocket.
++window.deviceManagerPort = 'localhost:20110';
++
+ // override window.open so that it uses the OS's default browser, not an electron browser
+ window.open = function (url, target) {
+     if (target === '_blank') {

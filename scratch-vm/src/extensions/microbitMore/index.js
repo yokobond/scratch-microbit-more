@@ -192,6 +192,7 @@ class MbitMore {
             gestureState: 0,
             ledMatrixState: new Uint8Array(5),
             lightLevel: 0,
+            temperature: 0,
             compassHeading: 0,
             magneticForce: {},
             analogValue: {},
@@ -528,6 +529,7 @@ class MbitMore {
                 );
                 // Light sensor
                 this._sensors.lightLevel = dataView.getUint8(18);
+                this._sensors.temperature = dataView.getUint8(19) - 128;
                 this.sensorsLastUpdated = Date.now();
                 return this._sensors;
             });
@@ -543,6 +545,18 @@ class MbitMore {
         }
         return this.updateSensors()
             .then(() => this._sensors.lightLevel);
+    }
+
+    /**
+     * Read temperature (integer in celsius) from the micro:bit cpu.
+     * @return {Promise} - a Promise that resolves temperature.
+     */
+    readTemperature () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        return this.updateSensors()
+            .then(() => this._sensors.temperature);
     }
 
     /**
@@ -1255,7 +1269,7 @@ class MbitMoreBlocks {
             {
                 text: formatMessage({
                     id: 'mbitMore.digitalValueMenu.Low',
-                    default: 'Low',
+                    default: '0',
                     description: 'label for low value in digital output menu for microbit more extension'
                 }),
                 value: DigitalValue.LOW
@@ -1263,7 +1277,7 @@ class MbitMoreBlocks {
             {
                 text: formatMessage({
                     id: 'mbitMore.digitalValueMenu.High',
-                    default: 'High',
+                    default: '1',
                     description: 'label for high value in digital output menu for microbit more extension'
                 }),
                 value: DigitalValue.HIGH}
@@ -1695,6 +1709,15 @@ class MbitMoreBlocks {
                         id: 'mbitMore.lightLevel',
                         default: 'light intensity',
                         description: 'how much the amount of light falling on the LEDs on micro:bit'
+                    }),
+                    blockType: BlockType.REPORTER
+                },
+                {
+                    opcode: 'getTemperature',
+                    text: formatMessage({
+                        id: 'mbitMore.temperature',
+                        default: 'temperature',
+                        description: 'temperature (celsius) on the surface of CPU of micro:bit'
                     }),
                     blockType: BlockType.REPORTER
                 },
@@ -2288,6 +2311,14 @@ class MbitMoreBlocks {
     }
 
     /**
+     * Get temperature (integer in celsius) of micro:bit.
+     * @return {Promise} - a Promise that resolves temperature.
+     */
+    getTemperature () {
+        return this._peripheral.readTemperature();
+    }
+
+    /**
      * Return angle from the north to the micro:bit heading direction.
      * @return {Promise} - a Promise that resolves compass heading angle from the north (0 - 359 degrees).
      */
@@ -2579,6 +2610,7 @@ class MbitMoreBlocks {
             'ja': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
                 'mbitMore.lightLevel': '明るさ',
+                'mbitMore.temperature': '温度',
                 'mbitMore.compassHeading': '北からの角度',
                 'mbitMore.magneticForce': '磁力 [AXIS]',
                 'mbitMore.acceleration': '加速度 [AXIS]',
@@ -2622,6 +2654,7 @@ class MbitMoreBlocks {
             'ja-Hira': {
                 'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
                 'mbitMore.lightLevel': 'あかるさ',
+                'mbitMore.temperature': 'おんど',
                 'mbitMore.compassHeading': 'きたからのかくど',
                 'mbitMore.magneticForce': 'じりょく [AXIS]',
                 'mbitMore.acceleration': 'かそくど [AXIS]',
