@@ -1,0 +1,17 @@
+diff --git a/src/util/scratch-link-websocket.js b/src/util/scratch-link-websocket.js
+index 035cea56..dfde1a1e 100644
+--- a/src/util/scratch-link-websocket.js
++++ b/src/util/scratch-link-websocket.js
+@@ -25,10 +25,10 @@ class ScratchLinkWebSocket {
+     open () {
+         switch (this._type) {
+         case 'BLE':
+-            this._ws = new WebSocket('wss://device-manager.scratch.mit.edu:20110/scratch/ble');
++            this._ws = new WebSocket(window.deviceManagerPort ? `wss://${window.deviceManagerPort}/scratch/ble` : 'wss://device-manager.scratch.mit.edu:20110/scratch/ble');
+             break;
+         case 'BT':
+-            this._ws = new WebSocket('wss://device-manager.scratch.mit.edu:20110/scratch/bt');
++            this._ws = new WebSocket(window.deviceManagerPort ? `wss://${window.deviceManagerPort}/scratch/bt` : 'wss://device-manager.scratch.mit.edu:20110/scratch/bt');
+             break;
+         default:
+             throw new Error(`Unknown ScratchLink socket Type: ${this._type}`);
