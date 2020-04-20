@@ -7,15 +7,6 @@ const VmRoot = path.resolve(__dirname, '../scratch-vm');
 const GuiRoot = path.resolve(__dirname, '../scratch-gui');
 const DesktopRoot = path.resolve(__dirname, '../scratch-desktop');
 
-const ExtId = 'microbitMore';
-const VmExtDirName = 'microbitMore';
-
-const VmExtPath = path.join('src', 'extensions', VmExtDirName);
-const GuiExtPath = path.join('src', 'lib', 'libraries', 'extensions', ExtId);
-const VmExtManager = path.join('src', 'extension-support', 'extension-manager.js');
-const GuiExtIndex = path.join('src', 'lib', 'libraries', 'extensions', 'index.jsx');
-const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'gui_ext_index-code.jsx'), 'utf-8');
-const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
 const ScratchDesktopIcnsFile = path.join('buildResources', 'ScratchDesktop.icns');
 const ScratchDesktopIcoFile = path.join('buildResources', 'ScratchDesktop.ico');
 const ScratchDesktopSvgFile = path.join('src', 'icon', 'ScratchDesktop.svg');
@@ -36,10 +27,11 @@ switch (args[0]) {
 
 // Make symbolic link in scratch-vm. 
 try {
-    fs.symlinkSync(path.resolve(path.join(ExtRoot, 'scratch-vm', VmExtPath)), path.resolve(path.join(VmRoot, VmExtPath)));
-    console.log(`Make link: ${path.resolve(path.join(VmRoot, VmExtPath))}`);
+    fs.unlinkSync(path.join(GuiRoot, 'node_modules', 'scratch-vm'));
+    fs.symlinkSync(VmRoot, path.join(GuiRoot, 'node_modules', 'scratch-vm'));
+    console.log(`Make link: ${path.join(GuiRoot, 'node_modules', 'scratch-vm')} -> ${VmRoot}`);
 } catch (err) {
-    console.log(`Already exists link: ${path.resolve(path.join(VmRoot, VmExtPath))}`);
+    console.log(err);
 }
 
 // Make symbolic link from scratch-vm for ESLint.
@@ -57,53 +49,24 @@ try {
     console.log(`Already exists link: ${path.resolve(path.join(ExtRoot, 'scratch-vm', 'src', '.eslintrc.js'))}`);
 }
 
-// Add the extension to extension manager of scratch-vm. 
-let managerCode = fs.readFileSync(path.resolve(path.join(VmRoot, VmExtManager)), 'utf-8');
-if (managerCode.includes(ExtId)) {
-    console.log(`Already registered in manager: ${ExtId}`);
-} else {
-    fs.copyFileSync(path.resolve(path.join(VmRoot, VmExtManager)), path.resolve(path.join(VmRoot, `${VmExtManager}_orig`)));
-    managerCode = managerCode.replace(/builtinExtensions = {[\s\S]*?};/, `$&\n\nbuiltinExtensions.${ExtId} = () => require('../extensions/${VmExtDirName}');`);
-    fs.writeFileSync(path.resolve(path.join(VmRoot, VmExtManager)), managerCode);
-    console.log(`Registered in manager: ${ExtId}`);
-}
-
-// Make symbolic link in scratch-gui. 
+// Install this extension.
 try {
-    fs.symlinkSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiExtPath)), path.resolve(path.join(GuiRoot, GuiExtPath)));
-    console.log(`Make link: ${path.resolve(path.join(GuiRoot, GuiExtPath))}`);
+    stdout = execSync(`cd ${ExtRoot} && node install.js ${GuiRoot}`);
+    console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
-    console.log(`Already exists link: ${path.resolve(path.join(GuiRoot, GuiExtPath))}`);
+    console.error(err);
 }
-
-// Add the extension to list of scratch-gui. 
-let indexCode = fs.readFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), 'utf-8');
-if (indexCode.includes(ExtId)) {
-    console.log(`Already added to extrnsion list: ${ExtId}`);
-} else {
-    fs.copyFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), path.resolve(path.join(GuiRoot, `${GuiExtIndex}_orig`)));
-    indexCode = indexCode.replace(/^.*export default\s+\[\s*$/m,
-        `${GuiExtIndexConfig.match(/<icon>.*[\r\n]+([\s\S]*)$[\r\n].*<\/icon>/mi)[1]
-        }\n\n$&\n${
-            GuiExtIndexConfig.match(/<configuration>.*[\r\n]+([\s\S]*)$[\r\n].*<\/configuration>/mi)[1]}`);
-    fs.writeFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), indexCode);
-    console.log(`Added to extrnsion list: ${ExtId}`);
-}
-
-// Change logo image of scratch-gui
-fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiMenuBarLogoFile)), path.resolve(path.join(GuiRoot, GuiMenuBarLogoFile)));
-
-// Use local repositories.
-stdout = execSync(`cd ${VmRoot} && npm link`);
-console.log(`stdout: ${stdout.toString()}`);
-
-stdout = execSync(`cd ${GuiRoot} && npm link`);
-console.log(`stdout: ${stdout.toString()}`);
-
-stdout = execSync(`cd ${GuiRoot} && npm link scratch-vm`);
-console.log(`stdout: ${stdout.toString()}`);
 
 if (desktop) {
+    // Make symbolic link in scratch-gui. 
+    try {
+        fs.unlinkSync(path.join(DesktopRoot, 'node_modules', 'scratch-gui'));
+        fs.symlinkSync(GuiRoot, path.join(DesktopRoot, 'node_modules', 'scratch-gui'));
+        console.log(`Make link: ${path.join(DesktopRoot, 'node_modules', 'scratch-gui')} -> ${GuiRoot}`);
+    } catch (err) {
+        console.log(err);
+    }
+
     // Applay patch to scratch-vm
     try {
         stdout = execSync(`cd ${VmRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'offline-websoket.patch')}`);
@@ -129,7 +92,4 @@ if (desktop) {
         // already applyed
         console.error(err);
     }
-
-    stdout = execSync(`cd ${DesktopRoot} && npm link scratch-gui`);
-    console.log(`stdout: ${stdout.toString()}`);
 }

@@ -1,8 +1,11 @@
 const path = require('path');
 const fs = require('fs');
+const { execSync } = require('child_process')
+
+const args = process.argv.slice(2);
 
 const ExtRoot = path.resolve(__dirname);
-const GuiRoot = path.resolve(__dirname, '../scratch-gui');
+const GuiRoot = path.resolve(__dirname, args[0] ? args[0] : '../scratch-gui');
 const VmRoot = path.join(GuiRoot, 'node_modules', 'scratch-vm');
 
 const ExtId = 'microbitMore';
@@ -14,6 +17,8 @@ const VmExtManager = path.join('src', 'extension-support', 'extension-manager.js
 const GuiExtIndex = path.join('src', 'lib', 'libraries', 'extensions', 'index.jsx');
 const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'gui_ext_index-code.jsx'), 'utf-8');
 const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
+
+let stdout;
 
 // Make symbolic link in scratch-vm. 
 try {
@@ -58,3 +63,12 @@ if (indexCode.includes(ExtId)) {
 
 // Change logo image of scratch-gui
 fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiMenuBarLogoFile)), path.resolve(path.join(GuiRoot, GuiMenuBarLogoFile)));
+
+// Applay patch to scratch-gui
+try {
+    stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scratch-gui.patch')}`);
+    console.log(`stdout: ${stdout.toString()}`);
+} catch (err) {
+    // already applyed
+    console.error(err);
+}
