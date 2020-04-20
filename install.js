@@ -2,10 +2,33 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process')
 
-const args = process.argv.slice(2);
+function getArgs () {
+    const args = {};
+    process.argv
+        .slice(2, process.argv.length)
+        .forEach( arg => {
+            if (arg.slice(0,2) === '--') {
+                // long arg
+                const longArg = arg.split('=');
+                const longArgFlag = longArg[0].slice(2,longArg[0].length);
+                const longArgValue = longArg.length > 1 ? longArg[1] : true;
+                args[longArgFlag] = longArgValue;
+            }
+            else if (arg[0] === '-') {
+                // flags
+                const flags = arg.slice(1,arg.length).split('');
+                flags.forEach(flag => {
+                    args[flag] = true;
+                });
+            }
+        });
+    return args;
+}
+
+const args = getArgs();
 
 const ExtRoot = path.resolve(__dirname);
-const GuiRoot = path.resolve(__dirname, args[0] ? args[0] : '../scratch-gui');
+const GuiRoot = path.resolve(__dirname, args['gui'] ? args['gui'] : '../scratch-gui');
 const VmRoot = path.join(GuiRoot, 'node_modules', 'scratch-vm');
 
 const ExtId = 'microbitMore';
@@ -61,14 +84,16 @@ if (indexCode.includes(ExtId)) {
     console.log(`Added to extrnsion list: ${ExtId}`);
 }
 
-// Change logo image of scratch-gui
-fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiMenuBarLogoFile)), path.resolve(path.join(GuiRoot, GuiMenuBarLogoFile)));
+if (args['L']) {
+    // Change logo image of scratch-gui
+    fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiMenuBarLogoFile)), path.resolve(path.join(GuiRoot, GuiMenuBarLogoFile)));
 
-// Applay patch to scratch-gui
-try {
-    stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scratch-gui.patch')}`);
-    console.log(`stdout: ${stdout.toString()}`);
-} catch (err) {
-    // already applyed
-    console.error(err);
+    // Applay patch to scratch-gui
+    try {
+        stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scratch-gui-logo.patch')}`);
+        console.log(`stdout: ${stdout.toString()}`);
+    } catch (err) {
+        // already applyed
+        console.error(err);
+    }
 }
