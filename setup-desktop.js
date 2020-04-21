@@ -31,7 +31,7 @@ console.log(`Make link: ${GuiModulePath} -> ${fs.readlinkSync(GuiModulePath)}`);
 
 // Applay patch to scratch-vm
 try {
-    stdout = execSync(`cd ${VmRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'offline-websoket.patch')}`);
+    stdout = execSync(`cd ${VmRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'offline-websoket.patch')}`);
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
     // already applyed
@@ -48,7 +48,7 @@ fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ProvisionProf
 
 // Apply patch to scratch-desktop
 try {
-    stdout = execSync(`cd ${DesktopRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scratch-desktop.patch')}`);
+    stdout = execSync(`cd ${DesktopRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'scratch-desktop.patch')}`);
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
     // already applyed
