@@ -17,24 +17,28 @@ let stdout;
 // Use local scratch-gui in scratch-desktop.
 const GuiModulePath = path.join(DesktopRoot, 'node_modules', 'scratch-gui');
 try {
-    const stats = fs.lstatSync(GuiModulePath);
-    if (stats.isSymbolicLink()) {
-        console.log(`Already exists link: ${GuiModulePath} -> ${fs.readlinkSync(GuiModulePath)}`);
+    const fsStats = fs.lstatSync(GuiModulePath);
+    if (fsStats.isSymbolicLink()) {
+        fs.unlinkSync(GuiModulePath);
     } else {
         fs.renameSync(GuiModulePath, `${GuiModulePath}_orig`);
     }
 } catch (err) {
-    console.log(err);
+    // file not exists
 }
-fs.symlinkSync(GuiRoot, GuiModulePath);
-console.log(`Make link: ${GuiModulePath} -> ${fs.readlinkSync(GuiModulePath)}`);
+try {
+    fs.symlinkSync(GuiRoot, GuiModulePath);
+    console.log(`Make link: ${GuiModulePath} -> ${fs.readlinkSync(GuiModulePath)}`);
+} catch (err) {
+    console.error(err);
+}
 
 // Applay patch to scratch-vm
 try {
     stdout = execSync(`cd ${VmRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'offline-websoket.patch')}`);
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
-    // already applyed
+    console.log('Already applyed: offline-websoket.patch');
     // console.error(err);
 }
 
@@ -51,6 +55,6 @@ try {
     stdout = execSync(`cd ${DesktopRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'scratch-desktop.patch')}`);
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
-    // already applyed
+    console.log('Already applyed: scratch-desktop.patch');
     // console.error(err);
 }
