@@ -38,7 +38,7 @@ const VmExtPath = path.join('src', 'extensions', VmExtDirName);
 const GuiExtPath = path.join('src', 'lib', 'libraries', 'extensions', ExtId);
 const VmExtManager = path.join('src', 'extension-support', 'extension-manager.js');
 const GuiExtIndex = path.join('src', 'lib', 'libraries', 'extensions', 'index.jsx');
-const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'gui_ext_index-code.jsx'), 'utf-8');
+const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'scripts', 'gui_ext_index-code.jsx'), 'utf-8');
 const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
 
 let stdout;
@@ -90,7 +90,7 @@ if (args['L']) {
 
     // Applay patch to scratch-gui
     try {
-        stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scratch-gui-logo.patch')}`);
+        stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'scratch-gui-logo.patch')}`);
         console.log(`stdout: ${stdout.toString()}`);
     } catch (err) {
         // already applyed
