@@ -48,7 +48,9 @@ fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDeskto
 fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopSvgFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopSvgFile)));
 
 // Set provision profile for Mac app
-fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ProvisionProfile)), path.resolve(path.join(DesktopRoot, ProvisionProfile)));
+if (process.platform === 'darwin') {
+    fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ProvisionProfile)), path.resolve(path.join(DesktopRoot, ProvisionProfile)));
+}
 
 // Apply patch to scratch-desktop
 try {
