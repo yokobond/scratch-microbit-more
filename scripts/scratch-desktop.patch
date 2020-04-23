@@ -42,7 +42,7 @@ index 7923115..dc361c3 100644
 +  "productName": "Microbit More Desktop",
 +  "description": "Scratch 3.0 desktop application with Microbit-More extension",
 +  "author": "Koji Yokokawa",
-+  "version": "0.5.0",
++  "version": "0.4.0",
    "license": "BSD-3-Clause",
    "scripts": {
      "start": "electron-webpack dev --bail --display-error-details --env.minify=false",
