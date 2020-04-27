@@ -37,6 +37,7 @@ const VmExtDirName = 'microbitMore';
 const VmExtPath = path.join('src', 'extensions', VmExtDirName);
 const GuiExtPath = path.join('src', 'lib', 'libraries', 'extensions', ExtId);
 const VmExtManager = path.join('src', 'extension-support', 'extension-manager.js');
+const VmVirtualMachineFile = path.join('src', 'virtual-machine.js');
 const GuiExtIndex = path.join('src', 'lib', 'libraries', 'extensions', 'index.jsx');
 const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'scripts', 'gui_ext_index-code.jsx'), 'utf-8');
 const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
@@ -60,6 +61,19 @@ if (managerCode.includes(ExtId)) {
     managerCode = managerCode.replace(/builtinExtensions = {[\s\S]*?};/, `$&\n\nbuiltinExtensions.${ExtId} = () => require('../extensions/${VmExtDirName}');`);
     fs.writeFileSync(path.resolve(path.join(VmRoot, VmExtManager)), managerCode);
     console.log(`Registered in manager: ${ExtId}`);
+}
+
+if (args['C']) {
+    // Add the extension as a core extension. 
+    let vmCode = fs.readFileSync(path.resolve(path.join(VmRoot, VmVirtualMachineFile)), 'utf-8');
+    if (vmCode.includes(ExtId)) {
+        console.log(`Already added as a core extension: ${ExtId}`);
+    } else {
+        fs.copyFileSync(path.resolve(path.join(VmRoot, VmVirtualMachineFile)), path.resolve(path.join(VmRoot, `${VmVirtualMachineFile}_orig`)));
+        vmCode = vmCode.replace(/CORE_EXTENSIONS = \[[\s\S]*?\];/, `$&\n\nCORE_EXTENSIONS.push('${ExtId}');`);
+        fs.writeFileSync(path.resolve(path.join(VmRoot, VmVirtualMachineFile)), vmCode);
+        console.log(`Add as a core extension: ${ExtId}`);
+    }
 }
 
 // Make symbolic link in scratch-gui. 

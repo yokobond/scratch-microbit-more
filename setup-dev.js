@@ -25,7 +25,7 @@ try {
 
 // Install this extension.
 try {
-    stdout = execSync(`cd ${ExtRoot} && node install.js --gui=${GuiRoot} -L`);
+    stdout = execSync(`cd ${ExtRoot} && node install.js --gui=${GuiRoot} -L -C`);
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
     console.error(err);
