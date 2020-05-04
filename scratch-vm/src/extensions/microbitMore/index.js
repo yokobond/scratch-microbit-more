@@ -267,13 +267,13 @@ class MbitMore {
         this._updateMicrobitService = this._updateMicrobitService.bind(this);
         this._useMbitMoreService = true;
 
-        this.digitalValuesUpdateInterval = 50; // milli-seconds
+        this.digitalValuesUpdateInterval = 20; // milli-seconds
         this.digitalValuesLastUpdated = Date.now();
 
         this.analogInUpdateInterval = 200; // milli-seconds
         this.analogInLastUpdated = Date.now();
 
-        this.sensorsUpdateInterval = 50; // milli-seconds
+        this.sensorsUpdateInterval = 20; // milli-seconds
         this.sensorsLastUpdated = Date.now();
     }
 
