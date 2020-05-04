@@ -6,6 +6,8 @@ const formatMessage = require('format-message');
 const BLE = require('../../io/ble');
 const Base64Util = require('../../util/base64-util');
 
+const timeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
+
 /**
  * Icon png to be displayed at the left edge of each extension block, encoded as a data URI.
  * @type {string}
@@ -275,6 +277,8 @@ class MbitMore {
 
         this.sensorsUpdateInterval = 20; // milli-seconds
         this.sensorsLastUpdated = Date.now();
+
+        this.bleReadTimelimit = 500;
     }
 
     /**
@@ -446,7 +450,7 @@ class MbitMore {
         if ((Date.now() - this.analogInLastUpdated) < this.analogInUpdateInterval) {
             return Promise.resolve(this._sensors);
         }
-        return this._ble.read(
+        const read = this._ble.read(
             MBITMORE_SERVICE.ID,
             MBITMORE_SERVICE.ANSLOG_IN,
             false)
@@ -466,6 +470,7 @@ class MbitMore {
                 this.analogInLastUpdated = Date.now();
                 return this._sensors;
             });
+        return Promise.race([read, timeoutPromise(this.bleReadTimelimit).then(() => this._sensors)]);
     }
 
     /**
@@ -495,7 +500,7 @@ class MbitMore {
         if ((Date.now() - this.sensorsLastUpdated) < this.sensorsUpdateInterval) {
             return Promise.resolve(this._sensors);
         }
-        return this._ble.read(
+        const read = this._ble.read(
             MBITMORE_SERVICE.ID,
             MBITMORE_SERVICE.SENSORS,
             false)
@@ -533,6 +538,7 @@ class MbitMore {
                 this.sensorsLastUpdated = Date.now();
                 return this._sensors;
             });
+        return Promise.race([read, timeoutPromise(this.bleReadTimelimit).then(() => this._sensors)]);
     }
 
     /**
@@ -939,7 +945,7 @@ class MbitMore {
      * @return {Promise} - Promise that resolves sensors which updated data of the ditital input state.
      */
     updateDigitalValue () {
-        return this._ble.read(
+        const read = this._ble.read(
             MBITMORE_SERVICE.ID,
             MBITMORE_SERVICE.IO,
             false)
@@ -953,6 +959,7 @@ class MbitMore {
                 this.digitalValuesLastUpdated = Date.now();
                 return this._sensors;
             });
+        return Promise.race([read, timeoutPromise(this.bleReadTimelimit).then(() => this._sensors)]);
     }
 
     /**
