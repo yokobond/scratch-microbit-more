@@ -106,7 +106,7 @@ const BLESendInterval = 100;
  * A string to report to the BLE socket when the micro:bit has stopped receiving data.
  * @type {string}
  */
-const BLEDataStoppedError = 'Microbit More extension stopped receiving data';
+const BLEDataStoppedError = 'micro:bit extension stopped receiving data';
 
 /**
  * Enum for micro:bit protocol.
