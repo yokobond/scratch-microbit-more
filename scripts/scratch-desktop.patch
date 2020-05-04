@@ -37,7 +37,7 @@ index 7923115..dc361c3 100644
 -  "productName": "Scratch Desktop",
 -  "description": "Scratch 3.0 as a self-contained desktop application",
 -  "author": "Scratch Foundation",
--  "version": "3.10.1",
+-  "version": "3.10.2",
 +  "name": "microbit-more-desktop",
 +  "productName": "Microbit More Desktop",
 +  "description": "Scratch 3.0 desktop application with Microbit-More extension",
