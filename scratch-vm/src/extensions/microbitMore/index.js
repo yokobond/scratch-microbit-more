@@ -196,7 +196,14 @@ class MbitMore {
             lightLevel: 0,
             temperature: 0,
             compassHeading: 0,
-            magneticForce: {},
+            accelerationX: 0,
+            accelerationY: 0,
+            accelerationZ: 0,
+            accelerationStrength: 0,
+            magneticForceX: 0,
+            magneticForceY: 0,
+            magneticForceZ: 0,
+            magneticStrength: 0,
             analogValue: {},
             digitalValue: {},
             sharedData: [0, 0, 0, 0]
@@ -508,9 +515,9 @@ class MbitMore {
                 const data = Base64Util.base64ToUint8Array(result.message);
                 const dataView = new DataView(data.buffer, 0);
                 // Accelerometer
-                this._sensors.accelerationX = dataView.getInt16(0, true);
-                this._sensors.accelerationY = dataView.getInt16(2, true);
-                this._sensors.accelerationZ = dataView.getInt16(4, true);
+                this._sensors.accelerationX = 1000 * dataView.getInt16(0, true) / G;
+                this._sensors.accelerationY = 1000 * dataView.getInt16(2, true) / G;
+                this._sensors.accelerationZ = 1000 * dataView.getInt16(4, true) / G;
                 this._sensors.accelerationStrength = Math.round(
                     Math.sqrt(
                         (this._sensors.accelerationX ** 2) +
@@ -518,18 +525,18 @@ class MbitMore {
                         (this._sensors.accelerationZ ** 2)
                     )
                 );
-                this._sensors.pitch = dataView.getInt16(6, true);
-                this._sensors.roll = dataView.getInt16(8, true);
+                this._sensors.pitch = Math.round(dataView.getInt16(6, true) * 180 / Math.PI / 1000);
+                this._sensors.roll = Math.round(dataView.getInt16(8, true) * 180 / Math.PI / 1000);
                 // Magnetometer
                 this._sensors.compassHeading = dataView.getUint16(10, true);
-                this._sensors.magneticForce[0] = dataView.getInt16(12, true);
-                this._sensors.magneticForce[1] = dataView.getInt16(14, true);
-                this._sensors.magneticForce[2] = dataView.getInt16(16, true);
+                this._sensors.magneticForceX = dataView.getInt16(12, true);
+                this._sensors.magneticForceY = dataView.getInt16(14, true);
+                this._sensors.magneticForceZ = dataView.getInt16(16, true);
                 this._sensors.magneticStrength = Math.round(
                     Math.sqrt(
-                        (this._sensors.magneticForce[0] ** 2) +
-                        (this._sensors.magneticForce[1] ** 2) +
-                        (this._sensors.magneticForce[2] ** 2)
+                        (this._sensors.magneticForceX ** 2) +
+                        (this._sensors.magneticForceY ** 2) +
+                        (this._sensors.magneticForceZ ** 2)
                     )
                 );
                 // Light sensor
@@ -586,7 +593,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => this._sensors.magneticForce[0]);
+            .then(() => this._sensors.magneticForceX);
     }
 
     /**
@@ -598,7 +605,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => this._sensors.magneticForce[2]);
+            .then(() => this._sensors.magneticForceY);
     }
 
     /**
@@ -610,7 +617,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => this._sensors.magneticForce[2]);
+            .then(() => this._sensors.magneticForceZ);
     }
 
     /**
@@ -634,7 +641,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => (1000 * this._sensors.accelerationX / G));
+            .then(() => this._sensors.accelerationX);
     }
 
     /**
@@ -646,7 +653,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => (1000 * this._sensors.accelerationY / G));
+            .then(() => this._sensors.accelerationY);
     }
 
     /**
@@ -658,7 +665,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => (1000 * this._sensors.accelerationZ / G));
+            .then(() => this._sensors.accelerationZ);
     }
 
     /**
@@ -670,7 +677,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => 1000 * this._sensors.accelerationStrength / G);
+            .then(() => this._sensors.accelerationStrength);
     }
 
     /**
@@ -682,7 +689,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => Math.round(this._sensors.pitch * 180 / Math.PI / 1000));
+            .then(() => this._sensors.pitch);
     }
 
     /**
@@ -694,7 +701,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => Math.round(this._sensors.roll * 180 / Math.PI / 1000));
+            .then(() => this._sensors.roll);
     }
 
     /**
@@ -885,9 +892,9 @@ class MbitMore {
         }
         case MBitMoreDataFormat.MIX_03: {
             this._sensors.magneticStrength = dataView.getUint16(10, true);
-            this._sensors.accelerationX = dataView.getInt16(12, true);
-            this._sensors.accelerationY = dataView.getInt16(14, true);
-            this._sensors.accelerationZ = dataView.getInt16(16, true);
+            this._sensors.accelerationX = 1000 * dataView.getInt16(12, true) / G;
+            this._sensors.accelerationY = 1000 * dataView.getInt16(14, true) / G;
+            this._sensors.accelerationZ = 1000 * dataView.getInt16(16, true) / G;
             break;
         }
         case MBitMoreDataFormat.SHARED_DATA: {
