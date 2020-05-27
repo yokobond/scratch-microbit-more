@@ -821,7 +821,7 @@ class MbitMore {
                     element => element.toLowerCase().indexOf(MBITMORE_SERVICE.ID) !== -1) !== 'undefined';
                 if (this._useMbitMoreService) {
                     // Microbit More service is available.
-                    this.send(BLECommand.CMD_PROTOCOL_SET, new Uint8Array([1])); // Set protocol ver.1.
+                    this.send(BLECommand.CMD_PROTOCOL, new Uint8Array([1])); // Set protocol ver.1.
                     this._ble.startNotifications(
                         MBITMORE_SERVICE.ID,
                         MBITMORE_SERVICE.SHARED_DATA,
@@ -997,7 +997,7 @@ class MbitMore {
     setSharedData (sharedDataIndex, sharedDataValue, util) {
         const dataView = new DataView(new ArrayBuffer(2));
         dataView.setInt16(0, sharedDataValue, true);
-        const command = this._useMbitMoreService ? BLECommand.CMD_SHARED_DATA_SET : BLECommandV0.CMD_SHARED_DATA_SET;
+        const command = this._useMbitMoreService ? BLECommand.CMD_SHARED_DATA : BLECommandV0.CMD_SHARED_DATA_SET;
         this.send(command,
             new Uint8Array([
                 sharedDataIndex,
