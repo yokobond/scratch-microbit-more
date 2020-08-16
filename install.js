@@ -32,9 +32,9 @@ const GuiRoot = path.resolve(__dirname, args['gui'] ? args['gui'] : '../scratch-
 const VmRoot = path.join(GuiRoot, 'node_modules', 'scratch-vm');
 
 const ExtId = 'microbitMore';
-const VmExtDirName = 'microbitMore';
+const ExtDirName = 'microbitMore';
 
-const VmExtPath = path.join('src', 'extensions', VmExtDirName);
+const VmExtPath = path.join('src', 'extensions', ExtDirName);
 const GuiExtPath = path.join('src', 'lib', 'libraries', 'extensions', ExtId);
 const VmExtManager = path.join('src', 'extension-support', 'extension-manager.js');
 const VmVirtualMachineFile = path.join('src', 'virtual-machine.js');
@@ -58,7 +58,7 @@ if (managerCode.includes(ExtId)) {
     console.log(`Already registered in manager: ${ExtId}`);
 } else {
     fs.copyFileSync(path.resolve(path.join(VmRoot, VmExtManager)), path.resolve(path.join(VmRoot, `${VmExtManager}_orig`)));
-    managerCode = managerCode.replace(/builtinExtensions = {[\s\S]*?};/, `$&\n\nbuiltinExtensions.${ExtId} = () => require('../extensions/${VmExtDirName}');`);
+    managerCode = managerCode.replace(/builtinExtensions = {[\s\S]*?};/, `$&\n\nbuiltinExtensions.${ExtId} = () => require('../extensions/${ExtDirName}');`);
     fs.writeFileSync(path.resolve(path.join(VmRoot, VmExtManager)), managerCode);
     console.log(`Registered in manager: ${ExtId}`);
 }
@@ -90,10 +90,11 @@ if (indexCode.includes(ExtId)) {
     console.log(`Already added to extrnsion list: ${ExtId}`);
 } else {
     fs.copyFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), path.resolve(path.join(GuiRoot, `${GuiExtIndex}_orig`)));
-    indexCode = indexCode.replace(/^.*export default\s+\[\s*$/m,
-        `${GuiExtIndexConfig.match(/<icon>.*[\r\n]+([\s\S]*)$[\r\n].*<\/icon>/mi)[1]
-        }\n\n$&\n${
-            GuiExtIndexConfig.match(/<configuration>.*[\r\n]+([\s\S]*)$[\r\n].*<\/configuration>/mi)[1]}`);
+    indexCode = indexCode.replace(/^.*export default\s+\[/m, 'const extensions = [');
+    indexCode += `\n// Injected for extra extension ${ExtId}`;
+    indexCode += `\nimport ${ExtId} from './${ExtDirName}/entry.jsx';`;
+    indexCode += `\nextensions.unshift(${ExtId});`;
+    indexCode += '\nexport default extensions;\n';
     fs.writeFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), indexCode);
     console.log(`Added to extrnsion list: ${ExtId}`);
 }
