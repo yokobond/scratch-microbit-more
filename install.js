@@ -39,7 +39,6 @@ const GuiExtPath = path.join('src', 'lib', 'libraries', 'extensions', ExtId);
 const VmExtManager = path.join('src', 'extension-support', 'extension-manager.js');
 const VmVirtualMachineFile = path.join('src', 'virtual-machine.js');
 const GuiExtIndex = path.join('src', 'lib', 'libraries', 'extensions', 'index.jsx');
-const GuiExtIndexConfig = fs.readFileSync(path.join(ExtRoot, 'scripts', 'gui_ext_index-code.jsx'), 'utf-8');
 const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
 
 let stdout;
