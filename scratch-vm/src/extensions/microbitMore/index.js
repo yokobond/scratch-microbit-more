@@ -205,6 +205,7 @@ class MbitMore {
             magneticForceZ: 0,
             magneticStrength: 0,
             analogValue: {},
+            powerVoltage: 0,
             digitalValue: {},
             sharedData: [0, 0, 0, 0]
         };
@@ -474,6 +475,7 @@ class MbitMore {
                 this._sensors.analogValue[this.analogIn[0]] = value1;
                 this._sensors.analogValue[this.analogIn[1]] = value2;
                 this._sensors.analogValue[this.analogIn[2]] = value3;
+                this._sensors.powerVoltage = dataView.getUint16(6, true) / 1000;
                 this.analogInLastUpdated = Date.now();
                 return this._sensors;
             });
@@ -494,6 +496,21 @@ class MbitMore {
         }
         return this.updateAnalogIn()
             .then(() => this._sensors.analogValue[pin]);
+    }
+
+    /**
+     * Read voltage of power supply [V].
+     * @return {Promise} - a Promise that resolves voltage value.
+     */
+    readPowerVoltage () {
+        if (!this.isConnected()) {
+            return Promise.resolve(0);
+        }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(0);
+        }
+        return this.updateAnalogIn()
+            .then(() => this._sensors.powerVoltage);
     }
 
     /**
@@ -1798,6 +1815,16 @@ class MbitMoreBlocks {
                         }
                     }
                 },
+                {
+                    opcode: 'getPowerVoltage',
+                    text: formatMessage({
+                        id: 'mbitMore.powerVoltage',
+                        default: 'voltage of power',
+                        description: 'voltage value of power supply in volt'
+                    }),
+                    blockType: BlockType.REPORTER,
+                    disableMonitor: true
+                },
                 '---',
                 {
                     opcode: 'getAnalogValue',
@@ -2341,6 +2368,14 @@ class MbitMoreBlocks {
     }
 
     /**
+     * Return voltage of the power supply [V].
+     * @return {Promise} - a Promise that resolves voltage value of the power supply.
+     */
+    getPowerVoltage () {
+        return this._peripheral.readPowerVoltage();
+    }
+
+    /**
      * Return analog value of the pin.
      * @param {object} args - the block's arguments.
      * @return {Promise} - a Promise that resolves analog input value of the pin.
@@ -2631,6 +2666,7 @@ class MbitMoreBlocks {
                 'mbitMore.pitch': 'ピッチ',
                 'mbitMore.roll': 'ロール',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
+                'mbitMore.powerVoltage': '電源電圧',
                 'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
                 'mbitMore.getSharedData': '共有データ [INDEX]',
                 'mbitMore.setSharedData': '共有データ [INDEX] を [VALUE] にする',
@@ -2675,6 +2711,7 @@ class MbitMoreBlocks {
                 'mbitMore.pitch': 'ピッチ',
                 'mbitMore.roll': 'ロール',
                 'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
+                'mbitMore.powerVoltage': 'でんげんでんあつ',
                 'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
                 'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
                 'mbitMore.setSharedData': 'きょうゆうデータ [INDEX] を [VALUE] にする',
