@@ -574,7 +574,7 @@ class MbitMore {
             return Promise.resolve(0);
         }
         return this.updateSensors()
-            .then(() => this._sensors.lightLevel);
+            .then(() => Math.round(this._sensors.lightLevel * 1000 / 255) / 10);
     }
 
     /**
