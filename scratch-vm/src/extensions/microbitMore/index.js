@@ -492,10 +492,10 @@ class MbitMore {
             return Promise.resolve(0);
         }
         if (!this._useMbitMoreService) {
-            return Promise.resolve(this._sensors.analogValue[pin]);
+            return Promise.resolve(Math.round(this._sensors.analogValue[pin] * 1000 / 1023) / 10);
         }
         return this.updateAnalogIn()
-            .then(() => this._sensors.analogValue[pin]);
+            .then(() => Math.round(this._sensors.analogValue[pin] * 1000 / 1023) / 10);
     }
 
     /**
