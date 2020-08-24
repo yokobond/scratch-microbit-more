@@ -27,7 +27,8 @@ const BLECommand = {
     CMD_DISPLAY_LED: 0x82,
     CMD_PROTOCOL: 0x90,
     CMD_PIN: 0x91,
-    CMD_SHARED_DATA: 0x92
+    CMD_SHARED_DATA: 0x92,
+    CMD_LIGHT_SENSING: 0x93
 };
 
 const MBitMorePinCommand =
@@ -573,8 +574,10 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
-        return this.updateSensors()
-            .then(() => Math.round(this._sensors.lightLevel * 1000 / 255) / 10);
+        this.send(BLECommand.CMD_LIGHT_SENSING, 10); // 10 times sensor-update (11 ms) for light sensing duration.
+        return timeoutPromise(100) // Wait for enough time to finish light sensing.
+            .then(() => this.updateSensors()
+                .then(() => Math.round(this._sensors.lightLevel * 1000 / 255) / 10));
     }
 
     /**
@@ -847,6 +850,7 @@ class MbitMore {
                         MBITMORE_SERVICE.ID,
                         MBITMORE_SERVICE.EVENT,
                         this._updateMicrobitService);
+                    this.send(BLECommand.CMD_LIGHT_SENSING, 0); // Set continuous light sensing to off.
                 }
             });
         this._timeoutID = window.setTimeout(
