@@ -7,7 +7,7 @@ import microbitMoreConnectionIconURL from './microbitMore-illustration.svg';
 import microbitMoreConnectionSmallIconURL from './microbitMore-small.svg';
 
 export default {
-    name: 'micro:bit MORE',
+    name: 'micro:bit MORE v0.4.3',
     extensionId: 'microbitMore',
     collaborator: 'Yengawa Lab',
     iconURL: microbitMoreIconURL,
