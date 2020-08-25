@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { execSync } = require('child_process')
+const { execSync } = require('child_process');
 
 const ExtRoot = path.resolve(__dirname);
 const GuiRoot = path.resolve(__dirname, '../scratch-gui');
