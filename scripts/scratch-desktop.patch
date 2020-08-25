@@ -1,5 +1,5 @@
 diff --git a/electron-builder.yaml b/electron-builder.yaml
-index 7382f39..7eb9824 100644
+index fc32724..2d04554 100644
 --- a/electron-builder.yaml
 +++ b/electron-builder.yaml
 @@ -1,8 +1,8 @@
@@ -10,10 +10,10 @@ index 7382f39..7eb9824 100644
 -productName: "Scratch Desktop"
 +appId: com.yengawa.mbitmore
 +productName: "Microbit More Desktop"
- afterSign: "scripts/afterSign.js"
+ publish: # empty provider list = don't publish
  mac:
    category: public.app-category.education
-@@ -30,9 +30,10 @@ win:
+@@ -33,9 +33,10 @@ win:
    target:
      - appx
      - nsis
@@ -28,7 +28,7 @@ index 7382f39..7eb9824 100644
  nsis:
    oneClick: false # allow user to choose per-user or per-machine
 diff --git a/package.json b/package.json
-index 7923115..dc361c3 100644
+index 7c167d7..cc09c46 100644
 --- a/package.json
 +++ b/package.json
 @@ -1,9 +1,9 @@
@@ -37,7 +37,7 @@ index 7923115..dc361c3 100644
 -  "productName": "Scratch Desktop",
 -  "description": "Scratch 3.0 as a self-contained desktop application",
 -  "author": "Scratch Foundation",
--  "version": "3.10.2",
+-  "version": "3.14.0",
 +  "name": "microbit-more-desktop",
 +  "productName": "Microbit More Desktop",
 +  "description": "Scratch 3.0 desktop application with Microbit-More extension",
@@ -45,9 +45,9 @@ index 7923115..dc361c3 100644
 +  "version": "0.4.3",
    "license": "BSD-3-Clause",
    "scripts": {
-     "start": "electron-webpack dev --bail --display-error-details --env.minify=false",
+     "clean": "rimraf ./dist ./static/assets && node ./scripts/npm-in-gui.js run clean",
 diff --git a/scripts/afterSign.js b/scripts/afterSign.js
-index d544191..1f939b1 100644
+index fbe4fb0..326fe89 100644
 --- a/scripts/afterSign.js
 +++ b/scripts/afterSign.js
 @@ -2,7 +2,7 @@ const {notarize} = require('electron-notarize');
@@ -58,12 +58,12 @@ index d544191..1f939b1 100644
 +    const appId = 'com.yengawa.mbitmore';
  
      if (!process.env.AC_USERNAME) {
-         throw new Error(
+         console.error([
 diff --git a/src/main/index.js b/src/main/index.js
-index 5758b44..55cf8f0 100644
+index fe98e1a..29b59b4 100644
 --- a/src/main/index.js
 +++ b/src/main/index.js
-@@ -167,7 +167,7 @@ const createAboutWindow = () => {
+@@ -202,7 +202,7 @@ const createAboutWindow = () => {
          height: 400,
          parent: _windows.main,
          search: 'route=about',
@@ -72,7 +72,7 @@ index 5758b44..55cf8f0 100644
      });
      return window;
  };
-@@ -184,7 +184,7 @@ const createMainWindow = () => {
+@@ -219,7 +219,7 @@ const createMainWindow = () => {
      const window = createWindow({
          width: defaultSize.width,
          height: defaultSize.height,
@@ -81,24 +81,3 @@ index 5758b44..55cf8f0 100644
      });
      const webContents = window.webContents;
  
-@@ -311,3 +311,5 @@ app.on('ready', () => {
- ipcMain.on('open-about-window', () => {
-     _windows.about.show();
- });
-+
-+app.commandLine.appendSwitch('ignore-certificate-errors');
-\ No newline at end of file
-diff --git a/src/renderer/app.jsx b/src/renderer/app.jsx
-index 49ff284..7f2a549 100644
---- a/src/renderer/app.jsx
-+++ b/src/renderer/app.jsx
-@@ -11,6 +11,9 @@ import styles from './app.css';
- 
- const defaultProjectId = 0;
- 
-+// Use localhost as hostname of Scratch Link websocket.
-+window.deviceManagerPort = 'localhost:20110';
-+
- // override window.open so that it uses the OS's default browser, not an electron browser
- window.open = function (url, target) {
-     if (target === '_blank') {
