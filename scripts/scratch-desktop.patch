@@ -60,7 +60,7 @@ index fbe4fb0..326fe89 100644
      if (!process.env.AC_USERNAME) {
          console.error([
 diff --git a/src/main/index.js b/src/main/index.js
-index fe98e1a..29b59b4 100644
+index fe98e1a..e126798 100644
 --- a/src/main/index.js
 +++ b/src/main/index.js
 @@ -202,7 +202,7 @@ const createAboutWindow = () => {
