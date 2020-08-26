@@ -33,15 +33,6 @@ try {
     console.error(err);
 }
 
-// Applay patch to scratch-vm
-try {
-    stdout = execSync(`cd ${VmRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'offline-websoket.patch')}`);
-    console.log(`stdout: ${stdout.toString()}`);
-} catch (err) {
-    console.log('Already applyed: offline-websoket.patch');
-    // console.error(err);
-}
-
 // Change logo image of scratch-desktop
 fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopIcnsFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopIcnsFile)));
 fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopIcoFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopIcoFile)));
