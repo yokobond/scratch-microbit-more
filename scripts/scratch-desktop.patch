@@ -28,24 +28,22 @@ index fc32724..2d04554 100644
  nsis:
    oneClick: false # allow user to choose per-user or per-machine
 diff --git a/package.json b/package.json
-index 7c167d7..cc09c46 100644
+index 917c56b..cddc5c5 100644
 --- a/package.json
 +++ b/package.json
-@@ -1,9 +1,9 @@
+@@ -1,8 +1,8 @@
  {
 -  "name": "scratch-desktop",
 -  "productName": "Scratch Desktop",
 -  "description": "Scratch 3.0 as a self-contained desktop application",
 -  "author": "Scratch Foundation",
--  "version": "3.14.0",
 +  "name": "microbit-more-desktop",
 +  "productName": "Microbit More Desktop",
 +  "description": "Scratch 3.0 desktop application with Microbit-More extension",
 +  "author": "Koji Yokokawa",
-+  "version": "0.4.3",
+   "version": "3.15.0",
    "license": "BSD-3-Clause",
    "scripts": {
-     "clean": "rimraf ./dist ./static/assets && node ./scripts/npm-in-gui.js run clean",
 diff --git a/scripts/afterSign.js b/scripts/afterSign.js
 index fbe4fb0..326fe89 100644
 --- a/scripts/afterSign.js
@@ -60,7 +58,7 @@ index fbe4fb0..326fe89 100644
      if (!process.env.AC_USERNAME) {
          console.error([
 diff --git a/src/main/index.js b/src/main/index.js
-index fe98e1a..e126798 100644
+index 229d4a4..7b576c5 100644
 --- a/src/main/index.js
 +++ b/src/main/index.js
 @@ -202,7 +202,7 @@ const createAboutWindow = () => {
