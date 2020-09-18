@@ -27,7 +27,8 @@ function getArgs () {
 
 const args = getArgs();
 
-const ExtRoot = path.resolve(__dirname);
+const ExtBlockPath = path.resolve(__dirname, './src/block');
+const ExtEntryPath = path.resolve(__dirname, './src/entry');
 const GuiRoot = path.resolve(__dirname, args['gui'] ? args['gui'] : '../scratch-gui');
 const VmRoot = path.join(GuiRoot, 'node_modules', 'scratch-vm');
 
@@ -45,7 +46,7 @@ let stdout;
 
 // Make symbolic link in scratch-vm. 
 try {
-    fs.symlinkSync(path.resolve(path.join(ExtRoot, 'scratch-vm', VmExtPath)), path.resolve(path.join(VmRoot, VmExtPath)));
+    fs.symlinkSync(ExtBlockPath, path.resolve(path.join(VmRoot, VmExtPath)));
     console.log(`Make link: ${path.resolve(path.join(VmRoot, VmExtPath))}`);
 } catch (err) {
     console.log(`Already exists link: ${path.resolve(path.join(VmRoot, VmExtPath))}`);
@@ -77,7 +78,7 @@ if (args['C']) {
 
 // Make symbolic link in scratch-gui. 
 try {
-    fs.symlinkSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiExtPath)), path.resolve(path.join(GuiRoot, GuiExtPath)));
+    fs.symlinkSync(ExtEntryPath, path.resolve(path.join(GuiRoot, GuiExtPath)));
     console.log(`Make link: ${path.resolve(path.join(GuiRoot, GuiExtPath))}`);
 } catch (err) {
     console.log(`Already exists link: ${path.resolve(path.join(GuiRoot, GuiExtPath))}`);
@@ -89,22 +90,24 @@ if (indexCode.includes(ExtId)) {
     console.log(`Already added to extrnsion list: ${ExtId}`);
 } else {
     fs.copyFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), path.resolve(path.join(GuiRoot, `${GuiExtIndex}_orig`)));
-    indexCode = indexCode.replace(/^.*export default\s+\[/m, 'const extensions = [');
+    indexCode = indexCode.replace(/^\s*export\s+default\s+\[/m, 'const extensions = [');
     indexCode += `\n// Injected for extra extension ${ExtId}`;
-    indexCode += `\nimport ${ExtId} from './${ExtDirName}/entry.jsx';`;
+    indexCode += `\nimport ${ExtId} from './${ExtDirName}/index.jsx';`;
     indexCode += `\nextensions.unshift(${ExtId});`;
-    indexCode += '\nexport default extensions;\n';
+    if (!/^\s*export\s+default\s+extensions;/.test(indexCode)) {
+        indexCode += '\nexport default extensions;\n';
+    }
     fs.writeFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), indexCode);
     console.log(`Added to extrnsion list: ${ExtId}`);
 }
 
 if (args['L']) {
     // Change logo image of scratch-gui
-    fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-gui', GuiMenuBarLogoFile)), path.resolve(path.join(GuiRoot, GuiMenuBarLogoFile)));
+    fs.copyFileSync(path.resolve(__dirname, './site/scratch-logo.svg'), path.resolve(path.join(GuiRoot, GuiMenuBarLogoFile)));
 
     // Applay patch to scratch-gui
     try {
-        stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'scratch-gui-logo.patch')}`);
+        stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.resolve(__dirname, './scripts/scratch-gui-logo.patch')}`);
         console.log(`stdout: ${stdout.toString()}`);
     } catch (err) {
         // already applyed

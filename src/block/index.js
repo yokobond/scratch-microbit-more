@@ -2,11 +2,15 @@ const ArgumentType = require('../../extension-support/argument-type');
 const BlockType = require('../../extension-support/block-type');
 const log = require('../../util/log');
 const cast = require('../../util/cast');
-const formatMessage = require('format-message');
 const BLE = require('../../io/ble');
 const Base64Util = require('../../util/base64-util');
 
+// Holder for the current format-message used in the runtime.
+let formatMessage = null;
+
 const timeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
+
+const EXTENSION_ID = 'microbitMore';
 
 /**
  * Icon png to be displayed at the left edge of each extension block, encoded as a data URI.
@@ -1132,7 +1136,7 @@ class MbitMoreBlocks {
      * @return {string} - the ID of this extension.
      */
     static get EXTENSION_ID () {
-        return 'microbitMore';
+        return EXTENSION_ID;
     }
 
     /**
@@ -1530,6 +1534,8 @@ class MbitMoreBlocks {
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        formatMessage = runtime.formatMessage;
 
         // Create a new MicroBit peripheral instance
         this._peripheral = new MbitMore(this.runtime, MbitMoreBlocks.EXTENSION_ID);
@@ -2130,7 +2136,8 @@ class MbitMoreBlocks {
                     acceptReporters: false,
                     items: this.CONNECTION_STATE_MENU
                 }
-            }
+            },
+            translationMap: extensionTranslations
         };
     }
 
@@ -2653,139 +2660,142 @@ class MbitMoreBlocks {
         return (state === this._peripheral.isConnected());
     }
 
+    /**
+     * Setup format-message for this extension.
+     */
     setupTranslations () {
         const localeSetup = formatMessage.setup();
-        const extTranslations = {
-            'ja': {
-                'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
-                'mbitMore.lightLevel': '明るさ',
-                'mbitMore.temperature': '温度',
-                'mbitMore.compassHeading': '北からの角度',
-                'mbitMore.magneticForce': '磁力 [AXIS]',
-                'mbitMore.acceleration': '加速度 [AXIS]',
-                'mbitMore.pitch': 'ピッチ',
-                'mbitMore.roll': 'ロール',
-                'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
-                'mbitMore.powerVoltage': '電源電圧',
-                'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
-                'mbitMore.getSharedData': '共有データ [INDEX]',
-                'mbitMore.setSharedData': '共有データ [INDEX] を [VALUE] にする',
-                'mbitMore.setPinMode': 'ピン [PIN] を [MODE] 入力にする',
-                'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
-                'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
-                'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] 度にする',
-                'mbitMore.digitalValueMenu.Low': '0',
-                'mbitMore.digitalValueMenu.High': '1',
-                'mbitMore.axisMenu.x': 'x',
-                'mbitMore.axisMenu.y': 'y',
-                'mbitMore.axisMenu.z': 'z',
-                'mbitMore.axisMenu.absolute': '大きさ',
-                'mbitMore.pinModeMenu.pullNone': '開放',
-                'mbitMore.pinModeMenu.pullUp': 'プルアップ',
-                'mbitMore.pinModeMenu.pullDown': 'プルダウン',
-                'mbitMore.setPinEventType': 'ピン [PIN] で [EVENT_TYPE] ',
-                'mbitMore.pinEventTypeMenu.none': 'イベントを受けない',
-                'mbitMore.pinEventTypeMenu.edge': 'エッジタイプのイベントを受ける',
-                'mbitMore.pinEventTypeMenu.pulse': 'パルスタイプのイベントを受ける',
-                'mbitMore.whenPinEvent': 'ピン [PIN] で [EVENT] イベントが上がった',
-                'mbitMore.pinEventMenu.rise': 'ライズ',
-                'mbitMore.pinEventMenu.fall': 'フォール',
-                'mbitMore.pinEventMenu.pulseHigh': 'ハイパルス',
-                'mbitMore.pinEventMenu.pulseLow': 'ローパルス',
-                'mbitMore.getPinEventTimestamp': 'ピン [PIN] の [EVENT]',
-                'mbitMore.pinEventTimestampMenu.rise': 'ライズの時刻',
-                'mbitMore.pinEventTimestampMenu.fall': 'フォールの時刻',
-                'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスの期間',
-                'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスの期間',
-                'mbitMore.connectionStateMenu.connected': 'つながった',
-                'mbitMore.connectionStateMenu.disconnected': '切れた',
-                'mbitMore.whenConnectionChanged': 'micro:bit と[STATE]とき'
-            },
-            'ja-Hira': {
-                'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
-                'mbitMore.lightLevel': 'あかるさ',
-                'mbitMore.temperature': 'おんど',
-                'mbitMore.compassHeading': 'きたからのかくど',
-                'mbitMore.magneticForce': 'じりょく [AXIS]',
-                'mbitMore.acceleration': 'かそくど [AXIS]',
-                'mbitMore.pitch': 'ピッチ',
-                'mbitMore.roll': 'ロール',
-                'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
-                'mbitMore.powerVoltage': 'でんげんでんあつ',
-                'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
-                'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
-                'mbitMore.setSharedData': 'きょうゆうデータ [INDEX] を [VALUE] にする',
-                'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にゅうりょくにする',
-                'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
-                'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
-                'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
-                'mbitMore..Low': '0',
-                'mbitMore.digitalValueMenu.High': '1',
-                'mbitMore.axisMenu.x': 'x',
-                'mbitMore.axisMenu.y': 'y',
-                'mbitMore.axisMenu.z': 'z',
-                'mbitMore.axisMenu.absolute': 'おおきさ',
-                'mbitMore.pinModeMenu.pullNone': 'かいほう',
-                'mbitMore.pinModeMenu.pullUp': 'プルアップ',
-                'mbitMore.pinModeMenu.pullDown': 'プルダウン',
-                'mbitMore.setPinEventType': 'ピン [PIN] で [EVENT_TYPE]',
-                'mbitMore.pinEventTypeMenu.none': 'イベントをうけない',
-                'mbitMore.pinEventTypeMenu.edge': 'エッジタイプのイベントをうける',
-                'mbitMore.pinEventTypeMenu.pulse': 'パルスタイプのイベントをうける',
-                'mbitMore.whenPinEvent': 'ピン [PIN] で [EVENT] イベントがあがった',
-                'mbitMore.pinEventMenu.rise': 'ライズ',
-                'mbitMore.pinEventMenu.fall': 'フォール',
-                'mbitMore.pinEventMenu.pulseHigh': 'ハイパルス',
-                'mbitMore.pinEventMenu.pulseLow': 'ローパルス',
-                'mbitMore.getPinEventTimestamp': 'ピン [PIN] の [EVENT]',
-                'mbitMore.pinEventTimestampMenu.rise': 'ライズのじかん',
-                'mbitMore.pinEventTimestampMenu.fall': 'フォールのじかん',
-                'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスのきかん',
-                'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスのきかん',
-                'mbitMore.connectionStateMenu.connected': 'つながった',
-                'mbitMore.connectionStateMenu.disconnected': 'きれた',
-                'mbitMore.whenConnectionChanged': 'micro:bit と[STATE]とき'
-            },
-            'pt-br': {
-                'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
-                'mbitMore.lightLevel': 'Intensidade da Luz',
-                'mbitMore.compassHeading': 'Está em direção ao Norte',
-                'mbitMore.magneticForce': 'Força Magnética [AXIS]',
-                'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
-                'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
-                'mbitMore.getSharedData': 'Dados compartilhados [INDEX]',
-                'mbitMore.setSharedData': 'Definir dados compartilhados [INDEX] com valor [VALUE]',
-                'mbitMore.setInput': 'Definir Pino[PIN] como entrada',
-                'mbitMore.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
-                'mbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
-                'mbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
-                'mbitMore.digitalValueMenu.Low': 'desligado',
-                'mbitMore.digitalValueMenu.High': 'ligado'
-            },
-            'pt': {
-                'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
-                'mbitMore.lightLevel': 'Intensidade da Luz',
-                'mbitMore.compassHeading': 'Está em direção ao Norte',
-                'mbitMore.magneticForce': 'Força Magnética [AXIS]',
-                'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
-                'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
-                'mbitMore.getSharedData': 'Dados compartilhados [INDEX]',
-                'mbitMore.setSharedData': 'Definir dados compartilhados [INDEX] com valor [VALUE]',
-                'mbitMore.setInput': 'Definir Pino[PIN] como entrada',
-                'mbitMore.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
-                'mbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
-                'mbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
-                'mbitMore.digitalValueMenu.Low': 'desligado',
-                'mbitMore.digitalValueMenu.High': 'ligado'
-            }
-        };
-        for (const locale in extTranslations) {
-            if (!localeSetup.translations[locale]) {
-                localeSetup.translations[locale] = {};
-            }
-            Object.assign(localeSetup.translations[locale], extTranslations[locale]);
-        }
+        if (localeSetup && localeSetup.translations[localeSetup.locale]) {
+        Object.assign(localeSetup.translations[localeSetup.locale], extensionTranslations[localeSetup.locale]);
+    }
     }
 }
 
+const extensionTranslations = {
+    'ja': {
+        'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
+        'mbitMore.lightLevel': '明るさ',
+        'mbitMore.temperature': '温度',
+        'mbitMore.compassHeading': '北からの角度',
+        'mbitMore.magneticForce': '磁力 [AXIS]',
+        'mbitMore.acceleration': '加速度 [AXIS]',
+        'mbitMore.pitch': 'ピッチ',
+        'mbitMore.roll': 'ロール',
+        'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
+        'mbitMore.powerVoltage': '電源電圧',
+        'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
+        'mbitMore.getSharedData': '共有データ [INDEX]',
+        'mbitMore.setSharedData': '共有データ [INDEX] を [VALUE] にする',
+        'mbitMore.setPinMode': 'ピン [PIN] を [MODE] 入力にする',
+        'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
+        'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
+        'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] 度にする',
+        'mbitMore.digitalValueMenu.Low': '0',
+        'mbitMore.digitalValueMenu.High': '1',
+        'mbitMore.axisMenu.x': 'x',
+        'mbitMore.axisMenu.y': 'y',
+        'mbitMore.axisMenu.z': 'z',
+        'mbitMore.axisMenu.absolute': '大きさ',
+        'mbitMore.pinModeMenu.pullNone': '開放',
+        'mbitMore.pinModeMenu.pullUp': 'プルアップ',
+        'mbitMore.pinModeMenu.pullDown': 'プルダウン',
+        'mbitMore.setPinEventType': 'ピン [PIN] で [EVENT_TYPE] ',
+        'mbitMore.pinEventTypeMenu.none': 'イベントを受けない',
+        'mbitMore.pinEventTypeMenu.edge': 'エッジタイプのイベントを受ける',
+        'mbitMore.pinEventTypeMenu.pulse': 'パルスタイプのイベントを受ける',
+        'mbitMore.whenPinEvent': 'ピン [PIN] で [EVENT] イベントが上がった',
+        'mbitMore.pinEventMenu.rise': 'ライズ',
+        'mbitMore.pinEventMenu.fall': 'フォール',
+        'mbitMore.pinEventMenu.pulseHigh': 'ハイパルス',
+        'mbitMore.pinEventMenu.pulseLow': 'ローパルス',
+        'mbitMore.getPinEventTimestamp': 'ピン [PIN] の [EVENT]',
+        'mbitMore.pinEventTimestampMenu.rise': 'ライズの時刻',
+        'mbitMore.pinEventTimestampMenu.fall': 'フォールの時刻',
+        'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスの期間',
+        'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスの期間',
+        'mbitMore.connectionStateMenu.connected': 'つながった',
+        'mbitMore.connectionStateMenu.disconnected': '切れた',
+        'mbitMore.whenConnectionChanged': 'micro:bit と[STATE]とき'
+    },
+    'ja-Hira': {
+        'mbitMore.isPinConnected': 'ピン [PIN] がつながった',
+        'mbitMore.lightLevel': 'あかるさ',
+        'mbitMore.temperature': 'おんど',
+        'mbitMore.compassHeading': 'きたからのかくど',
+        'mbitMore.magneticForce': 'じりょく [AXIS]',
+        'mbitMore.acceleration': 'かそくど [AXIS]',
+        'mbitMore.pitch': 'ピッチ',
+        'mbitMore.roll': 'ロール',
+        'mbitMore.analogValue': 'ピン [PIN] のアナログレベル',
+        'mbitMore.powerVoltage': 'でんげんでんあつ',
+        'mbitMore.digitalValue': 'ピン [PIN] のデジタルレベル',
+        'mbitMore.getSharedData': 'きょうゆうデータ [INDEX]',
+        'mbitMore.setSharedData': 'きょうゆうデータ [INDEX] を [VALUE] にする',
+        'mbitMore.setPinMode': 'ピン [PIN] を [MODE] にゅうりょくにする',
+        'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
+        'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
+        'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
+        'mbitMore..Low': '0',
+        'mbitMore.digitalValueMenu.High': '1',
+        'mbitMore.axisMenu.x': 'x',
+        'mbitMore.axisMenu.y': 'y',
+        'mbitMore.axisMenu.z': 'z',
+        'mbitMore.axisMenu.absolute': 'おおきさ',
+        'mbitMore.pinModeMenu.pullNone': 'かいほう',
+        'mbitMore.pinModeMenu.pullUp': 'プルアップ',
+        'mbitMore.pinModeMenu.pullDown': 'プルダウン',
+        'mbitMore.setPinEventType': 'ピン [PIN] で [EVENT_TYPE]',
+        'mbitMore.pinEventTypeMenu.none': 'イベントをうけない',
+        'mbitMore.pinEventTypeMenu.edge': 'エッジタイプのイベントをうける',
+        'mbitMore.pinEventTypeMenu.pulse': 'パルスタイプのイベントをうける',
+        'mbitMore.whenPinEvent': 'ピン [PIN] で [EVENT] イベントがあがった',
+        'mbitMore.pinEventMenu.rise': 'ライズ',
+        'mbitMore.pinEventMenu.fall': 'フォール',
+        'mbitMore.pinEventMenu.pulseHigh': 'ハイパルス',
+        'mbitMore.pinEventMenu.pulseLow': 'ローパルス',
+        'mbitMore.getPinEventTimestamp': 'ピン [PIN] の [EVENT]',
+        'mbitMore.pinEventTimestampMenu.rise': 'ライズのじかん',
+        'mbitMore.pinEventTimestampMenu.fall': 'フォールのじかん',
+        'mbitMore.pinEventTimestampMenu.pulseHigh': 'ハイパルスのきかん',
+        'mbitMore.pinEventTimestampMenu.pulseLow': 'ローパルスのきかん',
+        'mbitMore.connectionStateMenu.connected': 'つながった',
+        'mbitMore.connectionStateMenu.disconnected': 'きれた',
+        'mbitMore.whenConnectionChanged': 'micro:bit と[STATE]とき'
+    },
+    'pt-br': {
+        'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
+        'mbitMore.lightLevel': 'Intensidade da Luz',
+        'mbitMore.compassHeading': 'Está em direção ao Norte',
+        'mbitMore.magneticForce': 'Força Magnética [AXIS]',
+        'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
+        'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
+        'mbitMore.getSharedData': 'Dados compartilhados [INDEX]',
+        'mbitMore.setSharedData': 'Definir dados compartilhados [INDEX] com valor [VALUE]',
+        'mbitMore.setInput': 'Definir Pino[PIN] como entrada',
+        'mbitMore.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
+        'mbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
+        'mbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
+        'mbitMore.digitalValueMenu.Low': 'desligado',
+        'mbitMore.digitalValueMenu.High': 'ligado'
+    },
+    'pt': {
+        'mbitMore.isPinConnected': 'O Pino[PIN] está conectado?',
+        'mbitMore.lightLevel': 'Intensidade da Luz',
+        'mbitMore.compassHeading': 'Está em direção ao Norte',
+        'mbitMore.magneticForce': 'Força Magnética [AXIS]',
+        'mbitMore.acceleration': 'Aceleração no Eixo[AXIS]',
+        'mbitMore.analogValue': 'Ler Pino Analógico [PIN]',
+        'mbitMore.getSharedData': 'Dados compartilhados [INDEX]',
+        'mbitMore.setSharedData': 'Definir dados compartilhados [INDEX] com valor [VALUE]',
+        'mbitMore.setInput': 'Definir Pino[PIN] como entrada',
+        'mbitMore.setOutput': 'Definir pino digital[PIN] como:[LEVEL]',
+        'mbitMore.setPWM': 'Definir pino PWM[PIN]com[LEVEL]',
+        'mbitMore.setServo': 'Definir Servo no pino [PIN]com ângulo de [ANGLE]॰',
+        'mbitMore.digitalValueMenu.Low': 'desligado',
+        'mbitMore.digitalValueMenu.High': 'ligado'
+    }
+};
+
+
+exports.extension = MbitMoreBlocks; // loadable-extension needs this line.
 module.exports = MbitMoreBlocks;
