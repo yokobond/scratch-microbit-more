@@ -2735,7 +2735,7 @@ const extensionTranslations = {
         'mbitMore.setOutput': 'ピン [PIN] をデジタルレベル [LEVEL] にする',
         'mbitMore.setPWM': 'ピン [PIN] をアナログレベル [LEVEL] にする',
         'mbitMore.setServo': 'ピン [PIN] をサーボ [ANGLE] どにする',
-        'mbitMore..Low': '0',
+        'mbitMore.digitalValueMenu.Low': '0',
         'mbitMore.digitalValueMenu.High': '1',
         'mbitMore.axisMenu.x': 'x',
         'mbitMore.axisMenu.y': 'y',
