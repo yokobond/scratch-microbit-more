@@ -1545,6 +1545,12 @@ class MbitMoreBlocks {
          * @type {object.<number>} - list of pins which has events.
          */
         this.lastEvents = {};
+
+        /**
+         * URL from which this extension is loaded.
+         * @type {string} - URL string.
+         */
+        this.extensionURL = 'https://github.com/yokobond/scratch-microbit-more/raw/master/';
     }
 
     /**
@@ -1555,6 +1561,7 @@ class MbitMoreBlocks {
         return {
             id: MbitMoreBlocks.EXTENSION_ID,
             name: MbitMoreBlocks.EXTENSION_NAME,
+            extensionURL: this.extensionURL,
             blockIconURI: blockIconURI,
             showStatusButton: true,
             blocks: [
@@ -2666,8 +2673,11 @@ class MbitMoreBlocks {
     setupTranslations () {
         const localeSetup = formatMessage.setup();
         if (localeSetup && localeSetup.translations[localeSetup.locale]) {
-        Object.assign(localeSetup.translations[localeSetup.locale], extensionTranslations[localeSetup.locale]);
-    }
+            Object.assign(
+                localeSetup.translations[localeSetup.locale],
+                 extensionTranslations[localeSetup.locale]
+            );
+        }
     }
 }
 
@@ -2796,6 +2806,5 @@ const extensionTranslations = {
     }
 };
 
-
-exports.extension = MbitMoreBlocks; // loadable-extension needs this line.
+exports.block = MbitMoreBlocks; // loadable-extension needs this line.
 module.exports = MbitMoreBlocks;

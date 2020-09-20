@@ -6,15 +6,13 @@ import microbitMoreInsetIconURL from './microbitMore-small.svg';
 import microbitMoreConnectionIconURL from './microbitMore-illustration.svg';
 import microbitMoreConnectionSmallIconURL from './microbitMore-small.svg';
 
-const version = 'v0.5';
-
 const translationMap = {
     'ja': {
-        'gui.extension.microbitMore.name': 'micro:bit MORE {version}',
+        'gui.extension.microbitMore.name': 'micro:bit MORE v0.5',
         'gui.extension.microbitMore.description': 'micro:bitのすべての機能で遊ぶ。'
     },
     'ja-Hira': {
-        'gui.extension.microbitMore.name': 'マイクロビット モア {version}',
+        'gui.extension.microbitMore.name': 'マイクロビット モア v0.5',
         'gui.extension.microbitMore.description': 'マイクロビットのすべてのきのうであそぶ。'
     }
 };
@@ -22,13 +20,13 @@ const translationMap = {
 const entry = {
     name: (
         <FormattedMessage
-            defaultMessage="micro:bit MORE {version}"
+            defaultMessage="micro:bit MORE v0.5"
             description="Name for the 'microbit MORE' extension selector"
             id="gui.extension.microbitMore.name"
-            values={{version: version}}
         />
     ),
     extensionId: 'microbitMore',
+    extensionURL: 'https://github.com/yokobond/scratch-microbit-more/raw/master/',
     collaborator: 'Yengawa Lab',
     iconURL: microbitMoreIconURL,
     insetIconURL: microbitMoreInsetIconURL,
