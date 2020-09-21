@@ -2806,5 +2806,5 @@ const extensionTranslations = {
     }
 };
 
-exports.block = MbitMoreBlocks; // loadable-extension needs this line.
+exports.blockClass = MbitMoreBlocks; // loadable-extension needs this line.
 module.exports = MbitMoreBlocks;
