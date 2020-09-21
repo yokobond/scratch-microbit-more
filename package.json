@@ -8,7 +8,7 @@
     "entry": "./dist/microbitMore.entry.mjs"
   },
   "scripts": {
-    "setup": "node ./setup-dev.js",
+    "setup": "node ./scripts/setup-dev.js",
     "build": "rimraf ./dist && mkdirp ./dist && node build.js --name=microbitMore --block=\"./src/block\" --entry=\"./src/entry\" --vm=\"../scratch-vm\" --gui=\"../scratch-gui\" --output=\"./dist\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

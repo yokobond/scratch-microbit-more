@@ -2,15 +2,15 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process')
 
-const ExtRoot = path.resolve(__dirname);
-const VmRoot = path.resolve(__dirname, '../scratch-vm');
-const GuiRoot = path.resolve(__dirname, '../scratch-gui');
+const ExtRoot = path.resolve(__dirname, '../');
+const VmRoot = path.resolve(__dirname, '../../scratch-vm');
+const GuiRoot = path.resolve(__dirname, '../../scratch-gui');
 
 let stdout;
 
 // Use local scratch-vm in scratch-gui
 try {
-    const VmModulePath = path.join(GuiRoot, 'node_modules', 'scratch-vm');
+    const VmModulePath = path.resolve(GuiRoot, './node_modules/scratch-vm');
     const stats = fs.lstatSync(VmModulePath);
     if (stats.isSymbolicLink()) {
         console.log(`Already exists link: ${VmModulePath} -> ${fs.readlinkSync(VmModulePath)}`);
