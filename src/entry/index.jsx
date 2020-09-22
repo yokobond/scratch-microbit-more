@@ -26,7 +26,7 @@ const entry = {
         />
     ),
     extensionId: 'microbitMore',
-    extensionURL: 'https://github.com/yokobond/scratch-microbit-more/raw/master/',
+    extensionURL: 'https://yokobond.github.io/scratch-microbit-more/dist/microbitMore.mjs',
     collaborator: 'Yengawa Lab',
     iconURL: microbitMoreIconURL,
     insetIconURL: microbitMoreInsetIconURL,

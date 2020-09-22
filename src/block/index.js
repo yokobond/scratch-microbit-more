@@ -1550,7 +1550,7 @@ class MbitMoreBlocks {
          * URL from which this extension is loaded.
          * @type {string} - URL string.
          */
-        this.extensionURL = 'https://github.com/yokobond/scratch-microbit-more/raw/master/';
+        this.extensionURL = 'https://yokobond.github.io/scratch-microbit-more/dist/microbitMore.mjs';
     }
 
     /**

@@ -2,7 +2,7 @@ name: Gihub Pages
 on:
   push:
     branches:
-      - master
+      - develop
     tags:
       - "!*"
 
@@ -19,6 +19,8 @@ jobs:
         working-directory: ./scratch-gui
       - uses: actions/checkout@v2
         with:
+          repository: yokobond/scratch-microbit-more
+          ref: develop
           path: ./scratch-microbit-more
       - run: node ./install.js --gui=../scratch-gui -L -C
         working-directory: ./scratch-microbit-more
@@ -26,6 +28,7 @@ jobs:
         working-directory: ./scratch-gui
       - run: cp ./scratch-microbit-more/site/index.html ./scratch-gui/build/index.html
       - run: cp ./scratch-microbit-more/site/favicon.ico ./scratch-gui/build/static/favicon.ico
+      - run: ln -s ./scratch-microbit-more/dist ./scratch-gui/build/dist
       - uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
