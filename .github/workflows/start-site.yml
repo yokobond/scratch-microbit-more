@@ -1,8 +1,8 @@
-name: Gihub Pages
+name: Start Site
 on:
   push:
     branches:
-      - develop
+      - trunk
     tags:
       - "!*"
 
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           repository: yokobond/scratch-microbit-more
-          ref: develop
+          ref: trunk
           path: ./scratch-microbit-more
       - run: node ./install.js --gui=../scratch-gui -L -C
         working-directory: ./scratch-microbit-more
@@ -28,8 +28,9 @@ jobs:
         working-directory: ./scratch-gui
       - run: cp ./scratch-microbit-more/site/index.html ./scratch-gui/build/index.html
       - run: cp ./scratch-microbit-more/site/favicon.ico ./scratch-gui/build/static/favicon.ico
-      - run: cp -r ./scratch-microbit-more/dist ./scratch-gui/build/dist
+      # - run: cp -r ./scratch-microbit-more/dist ./scratch-gui/build/dist
       - uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           publish_dir: ./scratch-gui/build
+          keep_files: true
