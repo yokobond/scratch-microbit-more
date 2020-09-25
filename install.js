@@ -29,6 +29,8 @@ const args = getArgs();
 
 const ExtBlockPath = path.resolve(__dirname, './src/block');
 const ExtEntryPath = path.resolve(__dirname, './src/entry');
+const entryFile = path.resolve(ExtEntryPath, './index.jsx');
+const blockFile = path.resolve(ExtBlockPath, './index.js');
 const GuiRoot = path.resolve(__dirname, args['gui'] ? args['gui'] : '../scratch-gui');
 const VmRoot = path.join(GuiRoot, 'node_modules', 'scratch-vm');
 
@@ -43,6 +45,22 @@ const GuiExtIndex = path.join('src', 'lib', 'libraries', 'extensions', 'index.js
 const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
 
 let stdout;
+
+// Replace URL in entry and block code.
+if (args['url']) {
+    const url = args['url'];
+    // Replace URL in entry
+    let entryCode = fs.readFileSync(entryFile, 'utf-8');
+    entryCode = entryCode.replace(/extensionURL:\s*[^,]+,/m, `extensionURL: '${url}',`);
+    fs.writeFileSync(entryFile, entryCode);
+    console.log(`Entry: extensionURL = ${url}`);
+
+    // Replace URL in entry
+    let blockCode = fs.readFileSync(blockFile, 'utf-8');
+    blockCode = blockCode.replace(/let\s+extensionURL\s+=\s+[^;]+;/m, `let extensionURL = '${url}';`);
+    fs.writeFileSync(blockFile, blockCode);
+    console.log(`Block: extensionURL = ${url}`);
+}
 
 // Make symbolic link in scratch-vm. 
 try {

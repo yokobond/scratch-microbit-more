@@ -8,8 +8,11 @@
     "entry": "./dist/microbitMore.entry.mjs"
   },
   "scripts": {
-    "setup": "node ./scripts/setup-dev.js",
-    "build": "rimraf ./dist && mkdirp ./dist && node build.js --name=microbitMore --block=\"./src/block\" --entry=\"./src/entry\" --vm=\"../scratch-vm\" --gui=\"../scratch-gui\" --output=\"./dist\"",
+    "setup:dev": "node ./scripts/setup-dev.js",
+    "build:dev": "rimraf ./build && mkdirp ./build && node build.js --name=microbitMore --block=\"./src/block\" --entry=\"./src/entry\" --vm=\"../scratch-vm\" --gui=\"../scratch-gui\" --output=\"./build\"",
+    "build:dist": "rimraf ./dist && mkdirp ./dist && node build.js --name=microbitMore --block=\"./src/block\" --entry=\"./src/entry\" --vm=\"../scratch-vm\" --gui=\"../scratch-gui\" --output=\"./dist\"",
+    "install:dev": "node ./install.js --gui=\"../scratch-gui\" --url=\"http://127.0.0.1:5500/build/microbitMore.mjs\"",
+    "install:dist": "node ./install.js --gui=\"../scratch-gui\" --url=\"https://yokobond.github.io/scratch-microbit-more/dist/microbitMore.mjs\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
