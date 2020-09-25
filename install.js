@@ -90,13 +90,16 @@ if (indexCode.includes(ExtId)) {
     console.log(`Already added to extrnsion list: ${ExtId}`);
 } else {
     fs.copyFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), path.resolve(path.join(GuiRoot, `${GuiExtIndex}_orig`)));
-    indexCode = indexCode.replace(/^\s*export\s+default\s+\[/m, 'const extensions = [');
+    const immutableDefault = /^\s*export\s+default\s+\[/m
+    if (immutableDefault.test(indexCode)) {
+        // Make the list of extensions mutable.
+        indexCode = indexCode.replace(immutableDefault, 'const extensions = [');
+        indexCode += '\nexport default extensions;';
+    }
     indexCode += `\n// Injected for extra extension ${ExtId}`;
     indexCode += `\nimport ${ExtId} from './${ExtDirName}/index.jsx';`;
     indexCode += `\nextensions.unshift(${ExtId});`;
-    if (!/^\s*export\s+default\s+extensions;/.test(indexCode)) {
-        indexCode += '\nexport default extensions;\n';
-    }
+    indexCode += '\n';
     fs.writeFileSync(path.resolve(path.join(GuiRoot, GuiExtIndex)), indexCode);
     console.log(`Added to extrnsion list: ${ExtId}`);
 }
