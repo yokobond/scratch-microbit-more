@@ -56,5 +56,5 @@ const entry = {
     translationMap: translationMap
 };
 
-export { entry }; // loadable-extension needs this line.
+export {entry}; // loadable-extension needs this line.
 export default entry;
