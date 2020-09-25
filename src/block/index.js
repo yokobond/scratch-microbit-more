@@ -5,12 +5,23 @@ const cast = require('../../util/cast');
 const BLE = require('../../io/ble');
 const Base64Util = require('../../util/base64-util');
 
-// Holder for the current format-message used in the runtime.
-let formatMessage = null;
+/**
+ * Formatter which is used for translating.
+ * When it was loaded as a module, 'formatMessage' will be replaced which is used in the runtime.
+ * @type {Function}
+ */
+let formatMessage = require('format-message');
 
 const timeoutPromise = timeout => new Promise(resolve => setTimeout(resolve, timeout));
 
 const EXTENSION_ID = 'microbitMore';
+
+/**
+ * URL to get this extension as a module.
+ * When it was loaded as a module, 'extensionURL' will be replaced a URL which is retrieved from.
+ * @type {string}
+ */
+let extensionURL = 'https://yokobond.github.io/scratch-microbit-more/dist/microbitMore.mjs';
 
 /**
  * Icon png to be displayed at the left edge of each extension block, encoded as a data URI.
@@ -1140,6 +1151,22 @@ class MbitMoreBlocks {
     }
 
     /**
+     * URL to get this extension.
+     * @type {string}
+     */
+    static get extensionURL () {
+        return extensionURL;
+    }
+
+    /**
+     * Set URL to get this extension.
+     * @param {string} url - URL
+     */
+    static set extensionURL (url) {
+        extensionURL = url;
+    }
+
+    /**
      * @return {number} - the tilt sensor counts as "tilted" if its tilt angle meets or exceeds this threshold.
      */
     static get TILT_THRESHOLD () {
@@ -1535,8 +1562,10 @@ class MbitMoreBlocks {
          */
         this.runtime = runtime;
 
-        formatMessage = runtime.formatMessage;
-
+        if (runtime.formatMessage) {
+            // Replace 'formatMessage' to a formatter which is used in the runtime.
+            formatMessage = runtime.formatMessage;
+        }
         // Create a new MicroBit peripheral instance
         this._peripheral = new MbitMore(this.runtime, MbitMoreBlocks.EXTENSION_ID);
 
@@ -1546,11 +1575,6 @@ class MbitMoreBlocks {
          */
         this.lastEvents = {};
 
-        /**
-         * URL from which this extension is loaded.
-         * @type {string} - URL string.
-         */
-        this.extensionURL = 'https://yokobond.github.io/scratch-microbit-more/dist/microbitMore.mjs';
     }
 
     /**
@@ -1561,7 +1585,7 @@ class MbitMoreBlocks {
         return {
             id: MbitMoreBlocks.EXTENSION_ID,
             name: MbitMoreBlocks.EXTENSION_NAME,
-            extensionURL: this.extensionURL,
+            extensionURL: MbitMoreBlocks.extensionURL,
             blockIconURI: blockIconURI,
             showStatusButton: true,
             blocks: [
@@ -2144,6 +2168,7 @@ class MbitMoreBlocks {
                     items: this.CONNECTION_STATE_MENU
                 }
             },
+            // eslint-disable-next-line no-use-before-define
             translationMap: extensionTranslations
         };
     }
@@ -2675,7 +2700,8 @@ class MbitMoreBlocks {
         if (localeSetup && localeSetup.translations[localeSetup.locale]) {
             Object.assign(
                 localeSetup.translations[localeSetup.locale],
-                 extensionTranslations[localeSetup.locale]
+                // eslint-disable-next-line no-use-before-define
+                extensionTranslations[localeSetup.locale]
             );
         }
     }
