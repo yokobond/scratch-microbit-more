@@ -43,6 +43,7 @@
     "babel-loader": "^8.1.0",
     "command-line-args": "^5.1.1",
     "eslint": "^7.9.0",
+    "eslint-config-scratch": "^6.0.0",
     "fs-extra": "^9.0.1",
     "mkdirp": "^1.0.4",
     "rimraf": "^3.0.2",
@@ -50,6 +51,5 @@
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
