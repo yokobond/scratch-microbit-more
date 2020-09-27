@@ -22,7 +22,7 @@ jobs:
           repository: yokobond/scratch-microbit-more
           ref: develop
           path: ./scratch-microbit-more
-      - run: node ./install.js --gui=../scratch-gui -L -C
+      - run: node ./install.js --gui=../scratch-gui --url="https://yokobond.github.io/scratch-microbit-more/dev/dist/microbitMore.mjs" -L -C
         working-directory: ./scratch-microbit-more
       - run: npm run build
         working-directory: ./scratch-gui
