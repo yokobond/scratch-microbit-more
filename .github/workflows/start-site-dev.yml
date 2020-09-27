@@ -12,8 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          repository: LLK/scratch-gui
-          ref: develop
+          repository: yokobond/scratch-gui
+          ref: xcratch
           path: ./scratch-gui
       - run: npm install
         working-directory: ./scratch-gui
