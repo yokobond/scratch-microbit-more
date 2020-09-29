@@ -2,10 +2,9 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
 
-const ExtRoot = path.resolve(__dirname);
-const GuiRoot = path.resolve(__dirname, '../scratch-gui');
-const VmRoot = path.resolve(__dirname, '../scratch-vm');
-const DesktopRoot = path.resolve(__dirname, '../scratch-desktop');
+const ExtRoot = path.resolve(__dirname, '../');
+const GuiRoot = path.resolve(__dirname, '../../scratch-gui');
+const DesktopRoot = path.resolve(__dirname, '../../scratch-desktop');
 
 const ScratchDesktopIcnsFile = path.join('buildResources', 'ScratchDesktop.icns');
 const ScratchDesktopIcoFile = path.join('buildResources', 'ScratchDesktop.ico');
