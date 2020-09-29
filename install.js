@@ -42,7 +42,6 @@ const GuiExtPath = path.join('src', 'lib', 'libraries', 'extensions', ExtId);
 const VmExtManager = path.join('src', 'extension-support', 'extension-manager.js');
 const VmVirtualMachineFile = path.join('src', 'virtual-machine.js');
 const GuiExtIndex = path.join('src', 'lib', 'libraries', 'extensions', 'index.jsx');
-const GuiMenuBarLogoFile = path.join('src', 'components', 'menu-bar', 'scratch-logo.svg');
 
 let stdout;
 
@@ -128,19 +127,6 @@ try {
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
     // already applyed
-    console.error(err);
-}
-
-if (args['L']) {
-    // Change logo image of scratch-gui
-    fs.copyFileSync(path.resolve(__dirname, './site/scratch-logo.svg'), path.resolve(path.join(GuiRoot, GuiMenuBarLogoFile)));
-
-    // Applay patch to scratch-gui
-    try {
-        stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.resolve(__dirname, './scripts/scratch-gui-logo.patch')}`);
-        console.log(`stdout: ${stdout.toString()}`);
-    } catch (err) {
-        // already applyed
-        console.error(err);
-    }
+    console.log(`fail scratch-gui-translation.patch`);
+    // console.error(err);
 }
