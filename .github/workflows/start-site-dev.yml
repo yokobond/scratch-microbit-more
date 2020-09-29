@@ -1,4 +1,4 @@
-name: Gihub Pages
+name: Start Dev Site
 on:
   push:
     branches:

@@ -12,8 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          repository: LLK/scratch-gui
-          ref: develop
+          repository: yokobond/scratch-gui
+          ref: xcratch
           path: ./scratch-gui
       - run: npm install
         working-directory: ./scratch-gui
@@ -22,13 +22,15 @@ jobs:
           repository: yokobond/scratch-microbit-more
           ref: trunk
           path: ./scratch-microbit-more
-      - run: node ./install.js --gui=../scratch-gui -L -C
+      - run: node ./install.js --gui=../scratch-gui --url="https://yokobond.github.io/scratch-microbit-more/dev/dist/microbitMore.mjs" -C
+        working-directory: ./scratch-microbit-more
+      - run: node ./scripts/change-logo.js -gui=../scratch-gui
         working-directory: ./scratch-microbit-more
       - run: npm run build
         working-directory: ./scratch-gui
       - run: cp ./scratch-microbit-more/site/index.html ./scratch-gui/build/index.html
       - run: cp ./scratch-microbit-more/site/favicon.ico ./scratch-gui/build/static/favicon.ico
-      # - run: cp -r ./scratch-microbit-more/dist ./scratch-gui/build/dist
+      - run: cp -r ./scratch-microbit-more/dist ./scratch-gui/build/dist
       - uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
