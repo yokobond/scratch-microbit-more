@@ -8,11 +8,11 @@ import microbitMoreConnectionSmallIconURL from './microbitMore-small.svg';
 
 const translationMap = {
     'ja': {
-        'gui.extension.microbitMore.name': 'micro:bit MORE v0.5',
+        'gui.extension.microbitMore.name': 'micro:bit MORE v0.5.0',
         'gui.extension.microbitMore.description': 'micro:bitのすべての機能で遊ぶ。'
     },
     'ja-Hira': {
-        'gui.extension.microbitMore.name': 'マイクロビット モア v0.5',
+        'gui.extension.microbitMore.name': 'マイクロビット モア v0.5.0',
         'gui.extension.microbitMore.description': 'マイクロビットのすべてのきのうであそぶ。'
     }
 };
@@ -20,7 +20,7 @@ const translationMap = {
 const entry = {
     name: (
         <FormattedMessage
-            defaultMessage="micro:bit MORE v0.5"
+            defaultMessage="micro:bit MORE v0.5.0"
             description="Name for the 'microbit MORE' extension selector"
             id="gui.extension.microbitMore.name"
         />
