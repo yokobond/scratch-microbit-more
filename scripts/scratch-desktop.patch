@@ -58,7 +58,7 @@ index 883dc5f..37cc6f8 100644
 +  "productName": "MicrobitMore Desktop",
 +  "description": "Scratch 3.0 as a self-contained desktop application with Microbit-More extension",
 +  "author": "Koji Yokokawa",
-   "version": "3.16.0",
+   "version": "3.16.1",
    "license": "BSD-3-Clause",
    "scripts": {
      "clean": "rimraf ./dist ./static/assets",
