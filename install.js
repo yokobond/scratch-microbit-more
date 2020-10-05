@@ -32,7 +32,7 @@ const ExtEntryPath = path.resolve(__dirname, './src/entry');
 const entryFile = path.resolve(ExtEntryPath, './index.jsx');
 const blockFile = path.resolve(ExtBlockPath, './index.js');
 const GuiRoot = path.resolve(__dirname, args['gui'] ? args['gui'] : '../scratch-gui');
-const VmRoot = path.join(GuiRoot, 'node_modules', 'scratch-vm');
+const VmRoot = path.resolve(__dirname, args['vm'] ? args['vm'] : '../scratch-vm');
 
 const ExtId = 'microbitMore';
 const ExtDirName = 'microbitMore';

@@ -13,24 +13,9 @@ const ProvisionProfile = path.join('embedded.provisionprofile');
 
 let stdout;
 
-// Use local scratch-gui in scratch-desktop.
-const GuiModulePath = path.join(DesktopRoot, 'node_modules', 'scratch-gui');
-try {
-    const fsStats = fs.lstatSync(GuiModulePath);
-    if (fsStats.isSymbolicLink()) {
-        fs.unlinkSync(GuiModulePath);
-    } else {
-        fs.renameSync(GuiModulePath, `${GuiModulePath}_orig`);
-    }
-} catch (err) {
-    // file not exists
-}
-try {
-    fs.symlinkSync(GuiRoot, GuiModulePath);
-    console.log(`Make link: ${GuiModulePath} -> ${fs.readlinkSync(GuiModulePath)}`);
-} catch (err) {
-    console.error(err);
-}
+// Install base GUI
+stdout = execSync(`cd ${DesktopRoot} && npm install yokobond/scratch-gui#xcratch`);
+console.log(`stdout: ${stdout.toString()}`);
 
 // Change logo image of scratch-desktop
 fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopIcnsFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopIcnsFile)));

@@ -12,10 +12,10 @@
     "setup:desktop": "node ./scripts/setup-desktop.js",
     "build:dev": "rimraf ./build && mkdirp ./build && node build.js --name=microbitMore --block=\"./src/block\" --entry=\"./src/entry\" --vm=\"../scratch-vm\" --gui=\"../scratch-gui\" --output=\"./build\"",
     "build:dist": "rimraf ./dist && mkdirp ./dist && node build.js --name=microbitMore --block=\"./src/block\" --entry=\"./src/entry\" --vm=\"../scratch-vm\" --gui=\"../scratch-gui\" --output=\"./dist\"",
-    "install:local": "node ./install.js --gui=\"../scratch-gui\" --url=\"http://127.0.0.1:5500/build/microbitMore.mjs\" && npm run changeLogo",
-    "install:dev": "node ./install.js --gui=\"../scratch-gui\" --url=\"https://yokobond.github.io/scratch-microbit-more/dev/dist/microbitMore.mjs\" && npm run changeLogo",
-    "install:dist": "node ./install.js --gui=\"../scratch-gui\" --url=\"https://yokobond.github.io/scratch-microbit-more/dist/microbitMore.mjs\" && npm run changeLogo",
-    "changeLogo": "node ./scripts/change-logo.js -gui=\"../scratch-gui\"",
+    "install:local": "node ./install.js --gui=\"../scratch-gui\" --url=\"http://127.0.0.1:5500/build/microbitMore.mjs\" && node ./scripts/change-logo.js --gui=\"../scratch-gui\"",
+    "install:dev": "node ./install.js --gui=\"../scratch-gui\" --url=\"https://yokobond.github.io/scratch-microbit-more/dev/dist/microbitMore.mjs\" && node ./scripts/change-logo.js --gui=\"../scratch-gui\"",
+    "install:dist": "node ./install.js --gui=\"../scratch-gui\" --url=\"https://yokobond.github.io/scratch-microbit-more/dist/microbitMore.mjs\" && node ./scripts/change-logo.js --gui=\"../scratch-gui\"",
+    "install:desktop": "node ./install.js --vm=\"../scratch-desktop/node_modules/scratch-vm\" --gui=\"../scratch-desktop/node_modules/scratch-gui\" --url=\"https://yokobond.github.io/scratch-microbit-more/dist/microbitMore.mjs\" && node ./scripts/change-logo.js --gui=\"../scratch-desktop/node_modules/scratch-gui\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
