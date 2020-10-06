@@ -14,7 +14,7 @@ const ProvisionProfile = path.join('embedded.provisionprofile');
 let stdout;
 
 // Install base GUI
-stdout = execSync(`cd ${DesktopRoot} && npm install yokobond/scratch-gui#xcratch`);
+stdout = execSync(`cd ${DesktopRoot} && npm install yokobond/scratch-gui#xcratch-desktop`);
 console.log(`stdout: ${stdout.toString()}`);
 
 // Change logo image of scratch-desktop
