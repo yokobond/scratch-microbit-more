@@ -762,10 +762,6 @@ class MbitMore {
      */
     connect (id) {
         if (this._ble) {
-            this._ble.getServices = () => this._ble.sendRemoteRequest('getServices')
-                .catch(e => {
-                    this._ble._handleRequestError(e);
-                });
             this._ble.connectPeripheral(id);
         }
     }
@@ -848,26 +844,29 @@ class MbitMore {
      * @private
      */
     _onConnect () {
-        this._ble.getServices()
-            .then(services => {
-                this._ble.startNotifications(MICROBIT_SERVICE.ID, MICROBIT_SERVICE.RX, this._updateMicrobitService);
-                // Workaround for ScratchLink v.1.3.0 MacOS returns service id as distorted format,
-                // such as "0000A62D574E-1B34-4092-8DEE-4151F63B2865-0000-1000-8000-00805f9b34fb".
-                this._useMbitMoreService = typeof services.find(
-                    element => element.toLowerCase().indexOf(MBITMORE_SERVICE.ID) !== -1) !== 'undefined';
-                if (this._useMbitMoreService) {
-                    // Microbit More service is available.
-                    this.send(BLECommand.CMD_PROTOCOL, new Uint8Array([1])); // Set protocol ver.1.
-                    this._ble.startNotifications(
-                        MBITMORE_SERVICE.ID,
-                        MBITMORE_SERVICE.SHARED_DATA,
-                        this._updateMicrobitService);
-                    this._ble.startNotifications(
-                        MBITMORE_SERVICE.ID,
-                        MBITMORE_SERVICE.EVENT,
-                        this._updateMicrobitService);
-                    this.send(BLECommand.CMD_LIGHT_SENSING, 0); // Set continuous light sensing to off.
-                }
+        this._ble.startNotifications(MICROBIT_SERVICE.ID, MICROBIT_SERVICE.RX, this._updateMicrobitService);
+        // Test for availability of Microbit More service.
+        this._ble.read(
+            MBITMORE_SERVICE.ID,
+            MBITMORE_SERVICE.SHARED_DATA,
+            false)
+            .then(() => {
+                // Microbit More service is available.
+                this._useMbitMoreService = true;
+                this.send(BLECommand.CMD_PROTOCOL, new Uint8Array([1])); // Set protocol ver.1.
+                this._ble.startNotifications(
+                    MBITMORE_SERVICE.ID,
+                    MBITMORE_SERVICE.SHARED_DATA,
+                    this._updateMicrobitService);
+                this._ble.startNotifications(
+                    MBITMORE_SERVICE.ID,
+                    MBITMORE_SERVICE.EVENT,
+                    this._updateMicrobitService);
+                this.send(BLECommand.CMD_LIGHT_SENSING, 0); // Set continuous light sensing to off.
+            })
+            .catch(() => {
+                // Microbit More service is NOT available.
+                this._useMbitMoreService = false;
             });
         this._timeoutID = window.setTimeout(
             () => this._ble.handleDisconnectError(BLEDataStoppedError),
