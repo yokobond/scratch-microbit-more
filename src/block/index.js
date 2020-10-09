@@ -479,6 +479,7 @@ class MbitMore {
             MBITMORE_SERVICE.ANSLOG_IN,
             false)
             .then(result => {
+                if (!result) return this._sensors;
                 const data = Base64Util.base64ToUint8Array(result.message);
                 const dataView = new DataView(data.buffer, 0);
                 const value1 = dataView.getUint16(0, true);
@@ -545,6 +546,7 @@ class MbitMore {
             MBITMORE_SERVICE.SENSORS,
             false)
             .then(result => {
+                if (!result) return this._sensors;
                 const data = Base64Util.base64ToUint8Array(result.message);
                 const dataView = new DataView(data.buffer, 0);
                 // Accelerometer
@@ -993,6 +995,7 @@ class MbitMore {
             MBITMORE_SERVICE.IO,
             false)
             .then(result => {
+                if (!result) return this._sensors;
                 const data = Base64Util.base64ToUint8Array(result.message);
                 const dataView = new DataView(data.buffer, 0);
                 const gpioData = dataView.getUint32(0, true);
