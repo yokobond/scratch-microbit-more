@@ -883,31 +883,8 @@ class MbitMore {
     _updateMicrobitService (msg) {
         const data = Base64Util.base64ToUint8Array(msg);
         const dataView = new DataView(data.buffer, 0);
-        const dataFormat = dataView.getInt8(19);
-        if (dataFormat !== MBitMoreDataFormat.IO &&
-            dataFormat !== MBitMoreDataFormat.ANSLOG_IN &&
-            dataFormat !== MBitMoreDataFormat.LIGHT_SENSOR &&
-            dataFormat !== MBitMoreDataFormat.ACCELEROMETER &&
-            dataFormat !== MBitMoreDataFormat.MAGNETOMETER &&
-            dataFormat !== MBitMoreDataFormat.SHARED_DATA &&
-            dataFormat !== MBitMoreDataFormat.EVENT) {
-            // Read original micro:bit data.
-            this._sensors.tiltX = data[1] | (data[0] << 8);
-            if (this._sensors.tiltX > (1 << 15)) this._sensors.tiltX -= (1 << 16);
-            this._sensors.tiltY = data[3] | (data[2] << 8);
-            if (this._sensors.tiltY > (1 << 15)) this._sensors.tiltY -= (1 << 16);
-    
-            this._sensors.buttonA = dataView.getUint8(4);
-            this._sensors.buttonB = dataView.getUint8(5);
-    
-            this._sensors.touchPins[0] = dataView.getUint8(6);
-            this._sensors.touchPins[1] = dataView.getUint8(7);
-            this._sensors.touchPins[2] = dataView.getUint8(8);
-    
-            this._sensors.gestureState = dataView.getUint8(9);
-        }
-
-        switch (dataView.getUint8(19)) {
+        const dataFormat = dataView.getUint8(19);
+        switch (dataFormat) {
         case MBitMoreDataFormat.MIX_01: {
             this._sensors.analogValue[this.analogIn[0]] = dataView.getUint16(10, true);
             this._sensors.analogValue[this.analogIn[1]] = dataView.getUint16(12, true);
@@ -951,6 +928,20 @@ class MbitMore {
             break;
         }
         default:
+            // Read original micro:bit data.
+            this._sensors.tiltX = data[1] | (data[0] << 8);
+            if (this._sensors.tiltX > (1 << 15)) this._sensors.tiltX -= (1 << 16);
+            this._sensors.tiltY = data[3] | (data[2] << 8);
+            if (this._sensors.tiltY > (1 << 15)) this._sensors.tiltY -= (1 << 16);
+    
+            this._sensors.buttonA = dataView.getUint8(4);
+            this._sensors.buttonB = dataView.getUint8(5);
+    
+            this._sensors.touchPins[0] = dataView.getUint8(6);
+            this._sensors.touchPins[1] = dataView.getUint8(7);
+            this._sensors.touchPins[2] = dataView.getUint8(8);
+    
+            this._sensors.gestureState = dataView.getUint8(9);
             break;
         }
         this.resetDisconnectTimeout();
