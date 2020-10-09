@@ -767,7 +767,6 @@ class MbitMore {
                     this._ble._handleRequestError(e);
                 });
             this._ble.connectPeripheral(id);
-            this.peripheralId = id;
         }
     }
 
