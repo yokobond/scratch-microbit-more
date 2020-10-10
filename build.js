@@ -117,9 +117,12 @@ async function build() {
     // Copy module sources
     fs.copySync(extSrcDir, blockWorkingDir);
     fs.copySync(entrySrcDir, entryWorkingDir);
-    console.log('copy source to working dir');
+    console.log('\ncopy source to working dir');
+    console.log(blockWorkingDir);
+    console.log(entryWorkingDir);
 
     // Build module.
+    console.log('\nstart to build module ...');
     const bundle = await rollup.rollup(rollupOptions.inputOptions);
     if (options['debug']) {
         console.log('\ncontent files\n----')
@@ -139,11 +142,12 @@ async function build() {
     }
     // write the bundle to disk
     await bundle.write(rollupOptions.outputOptions);
+    console.log(`\nsuccess to build module: ${moduleFile}`);
 
     // Clean up
     fs.removeSync(blockWorkingDir);
     fs.removeSync(entryWorkingDir);
-    console.log('removed working dir');
+    console.log('\nworking dir removed');
 }
 
 try {
