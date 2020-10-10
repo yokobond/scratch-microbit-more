@@ -27,12 +27,12 @@ function getArgs () {
 
 const args = getArgs();
 
-const ExtBlockPath = path.resolve(__dirname, './src/block');
-const ExtEntryPath = path.resolve(__dirname, './src/entry');
+const ExtBlockPath = path.resolve(__dirname, '../src/block');
+const ExtEntryPath = path.resolve(__dirname, '../src/entry');
 const entryFile = path.resolve(ExtEntryPath, './index.jsx');
 const blockFile = path.resolve(ExtBlockPath, './index.js');
-const GuiRoot = path.resolve(__dirname, args['gui'] ? args['gui'] : '../scratch-gui');
-const VmRoot = path.resolve(__dirname, args['vm'] ? args['vm'] : '../scratch-vm');
+const GuiRoot = args['gui'] ? path.resolve(process.cwd(), args['gui']) : path.resolve(__dirname, '../../scratch-gui');
+const VmRoot = args['vm'] ? path.resolve(process.cwd(), args['vm']) : path.resolve(__dirname, '../../scratch-vm');
 
 const ExtId = 'microbitMore';
 const ExtDirName = 'microbitMore';
@@ -123,7 +123,7 @@ if (indexCode.includes(ExtId)) {
 
 // Applay patch fro translation to scratch-gui
 try {
-    stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.resolve(__dirname, './scripts/scratch-gui-translation.patch')}`);
+    stdout = execSync(`cd ${GuiRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.resolve(__dirname, './scratch-gui-translation.patch')}`);
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
     // already applyed
