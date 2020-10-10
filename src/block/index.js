@@ -509,10 +509,10 @@ class MbitMore {
             return Promise.resolve(0);
         }
         if (!this._useMbitMoreService) {
-            return Promise.resolve(Math.round(this._sensors.analogValue[pin] * 1000 / 1023) / 10);
+            return Promise.resolve(this._sensors.analogValue[pin]);
         }
         return this.updateAnalogIn()
-            .then(() => Math.round(this._sensors.analogValue[pin] * 1000 / 1023) / 10);
+            .then(() => this._sensors.analogValue[pin]);
     }
 
     /**
@@ -594,7 +594,7 @@ class MbitMore {
         this.send(BLECommand.CMD_LIGHT_SENSING, 10); // 10 times sensor-update (11 ms) for light sensing duration.
         return timeoutPromise(100) // Wait for enough time to finish light sensing.
             .then(() => this.updateSensors()
-                .then(() => Math.round(this._sensors.lightLevel * 1000 / 255) / 10));
+                .then(() => this._sensors.lightLevel));
     }
 
     /**
@@ -2383,7 +2383,8 @@ class MbitMoreBlocks {
      * @return {Promise} - a Promise that resolves light level.
      */
     getLightLevel () {
-        return this._peripheral.readLightLevel();
+        return this._peripheral.readLightLevel()
+            .then(level => Math.round(level * 1000 / 255) / 10);
     }
 
     /**
@@ -2419,7 +2420,8 @@ class MbitMoreBlocks {
         const pin = parseInt(args.PIN, 10);
         if (isNaN(pin)) return 0;
         if (pin < 0 || pin > 2) return 0;
-        return this._peripheral.readAnalogIn(pin);
+        return this._peripheral.readAnalogIn(pin)
+            .then(level => Math.round(level * 1000 / 1023) / 10);
     }
 
     /**
