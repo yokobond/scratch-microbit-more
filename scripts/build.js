@@ -53,16 +53,16 @@ const moduleName = options['name'];
 if (!options['block']) {
     throw('set --block <source directory>');
 }
-const extSrcDir = path.resolve(__dirname, options['block']);
+const extSrcDir = path.resolve(process.cwd(), options['block']);
 if (!options['entry']) {
     throw('set --entry <entry directory>');
 }
-const entrySrcDir = path.resolve(__dirname, options['entry']);
-const VmRoot = path.resolve(__dirname, options['vm']);
+const entrySrcDir = path.resolve(process.cwd(), options['entry']);
+const VmRoot = path.resolve(process.cwd(), options['vm']);
 console.log(`vm = ${VmRoot}`);
-const GuiRoot = path.resolve(__dirname, options['gui']);
+const GuiRoot = path.resolve(process.cwd(), options['gui']);
 console.log(`gui = ${GuiRoot}`);
-const outputDir = path.resolve(__dirname, options['output']);
+const outputDir = path.resolve(process.cwd(), options['output']);
 console.log(`output = ${outputDir}`);
 
 const blockWorkingDir = path.resolve(VmRoot, `src/extensions/_${moduleName}`);
@@ -71,7 +71,7 @@ const blockFile = path.resolve(blockWorkingDir, 'index.js');
 const entryWorkingDir = path.resolve(GuiRoot, `src/lib/libraries/extensions/_${moduleName}`);
 const entryFile = path.resolve(entryWorkingDir, 'index.jsx');
 
-const moduleFile = path.resolve(__dirname, outputDir, `${moduleName}.mjs`);
+const moduleFile = path.resolve(outputDir, `${moduleName}.mjs`);
 
 const rollupOptions = {
     inputOptions: {
