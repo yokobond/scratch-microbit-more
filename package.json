@@ -8,7 +8,7 @@
     "entry": "./dist/microbitMore.entry.mjs"
   },
   "scripts": {
-    "setup:local": "node ./scripts/setup-dev.js",
+    "setup:local": "node ./scripts/setup-local.js",
     "setup:desktop": "node ./scripts/setup-desktop.js",
     "build:local": "rimraf ./build && mkdirp ./build && node build.js --name=microbitMore --block=\"./src/block\" --entry=\"./src/entry\" --vm=\"../scratch-vm\" --gui=\"../scratch-gui\" --output=\"./build\" --debug",
     "build:dist": "rimraf ./dist && mkdirp ./dist && node build.js --name=microbitMore --block=\"./src/block\" --entry=\"./src/entry\" --vm=\"../scratch-vm\" --gui=\"../scratch-gui\" --output=\"./dist\"",
