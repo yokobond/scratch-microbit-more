@@ -591,6 +591,9 @@ class MbitMore {
         if (!this.isConnected()) {
             return Promise.resolve(0);
         }
+        if (!this._useMbitMoreService) {
+            return Promise.resolve(this._sensors.lightLevel);
+        }
         this.send(BLECommand.CMD_LIGHT_SENSING, 10); // 10 times sensor-update (11 ms) for light sensing duration.
         return timeoutPromise(100) // Wait for enough time to finish light sensing.
             .then(() => this.updateSensors()
@@ -1055,6 +1058,7 @@ class MbitMore {
      * @param {object} util - utility object provided by the runtime.
     */
     setPinEventType (pinIndex, eventType, util) {
+        if (!this._useMbitMoreService) return;
         this.send(BLECommand.CMD_PIN,
             new Uint8Array([
                 MBitMorePinCommand.SET_EVENT,
