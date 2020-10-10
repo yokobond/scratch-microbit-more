@@ -37,6 +37,10 @@ const optionDefinitions = [
         name: 'output',
         type:String,
         defaultValue: './build'
+    },
+    {
+        name: 'debug',
+        type:Boolean
     }
 ];
 
@@ -117,19 +121,23 @@ async function build() {
 
     // Build module.
     const bundle = await rollup.rollup(rollupOptions.inputOptions);
-    console.log(bundle.watchFiles); // an array of file names this bundle depends on
-    // show contents of the module
-    bundle.generate(rollupOptions.outputOptions)
-        .then(res => {
-            for (const chunkOrAsset of  res.output) {
-                if (chunkOrAsset.type === 'asset') {
-                    console.log('Asset', chunkOrAsset);
-                } else {
-                    console.log('Chunk', chunkOrAsset.modules);
+    if (options['debug']) {
+        console.log('\ncontent files\n----')
+        bundle.watchFiles.forEach(fileName => console.log(fileName)); // an array of file names this bundle depends on
+        console.log('----\n');
+        // show contents of the module
+        bundle.generate(rollupOptions.outputOptions)
+            .then(res => {
+                for (const chunkOrAsset of  res.output) {
+                    if (chunkOrAsset.type === 'asset') {
+                        console.log('Asset', chunkOrAsset);
+                    } else {
+                        console.log('Chunk', chunkOrAsset.modules);
+                    }
                 }
-            }
-        })
-    // or write the bundle to disk
+            })
+    }
+    // write the bundle to disk
     await bundle.write(rollupOptions.outputOptions);
 
     // Clean up
