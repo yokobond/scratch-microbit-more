@@ -1,8 +1,8 @@
-name: Gihub Pages
+name: Start Site
 on:
   push:
     branches:
-      - master
+      - trunk
     tags:
       - "!*"
 
@@ -26,7 +26,8 @@ jobs:
         working-directory: ./scratch-gui
       - run: cp ./scratch-microbit-more/site/index.html ./scratch-gui/build/index.html
       - run: cp ./scratch-microbit-more/site/favicon.ico ./scratch-gui/build/static/favicon.ico
-      - uses: peaceiris/actions-gh-pages@v3
+      - uses: peaceiris/actions-gh-pages@fix-copy-assets
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
           publish_dir: ./scratch-gui/build
+          keep_files: true
