@@ -834,7 +834,7 @@ class MbitMore {
         }
         const data = Base64Util.uint8ArrayToBase64(output);
 
-        this._ble.write(MICROBIT_SERVICE.ID, MICROBIT_SERVICE.TX, data, 'base64', true).then(
+        this._ble.write(MICROBIT_SERVICE.ID, MICROBIT_SERVICE.TX, data, 'base64', false).then(
             () => {
                 this._busy = false;
                 window.clearTimeout(this._busyTimeoutID);
