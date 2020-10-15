@@ -4,17 +4,25 @@ const fs = require('fs');
 const VmRoot = path.resolve(__dirname, '../../scratch-vm');
 const GuiRoot = path.resolve(__dirname, '../../scratch-gui');
 
-// Use local scratch-vm in scratch-gui
-try {
-    const VmModulePath = path.resolve(GuiRoot, './node_modules/scratch-vm');
-    const stats = fs.lstatSync(VmModulePath);
-    if (stats.isSymbolicLink()) {
-        console.log(`Already exists link: ${VmModulePath} -> ${fs.readlinkSync(VmModulePath)}`);
-    } else {
-        fs.renameSync(VmModulePath, `${VmModulePath}_orig`);
-        fs.symlinkSync(VmRoot, VmModulePath);
-        console.log(`Make link: ${VmModulePath} -> ${fs.readlinkSync(VmModulePath)}`);
+// Make symbolic link
+function makeSymbolickLink(to, from) {
+    try {
+        const stats = fs.lstatSync(from);
+        if (stats.isSymbolicLink() && 
+            fs.readlinkSync(from) === to) {
+            console.log(`Already exists link: ${from} -> ${fs.readlinkSync(from)}`);
+            return;
+        }
+        fs.renameSync(from, `${from}_org`);
+    } catch (err) {
+        // File not esists.
     }
-} catch (err) {
-    console.log(err);
+    fs.symlinkSync(to, from);
+    console.log(`Make link: ${from} -> ${fs.readlinkSync(from)}`);
 }
+
+// Use local scratch-vm in scratch-gui
+makeSymbolickLink(
+    VmRoot,
+    path.resolve(GuiRoot, './node_modules/scratch-vm')
+)
