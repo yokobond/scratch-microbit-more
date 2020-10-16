@@ -31,12 +31,16 @@ const args = getArgs();
 function makeSymbolickLink(to, from) {
     try {
         const stats = fs.lstatSync(from);
-        if (stats.isSymbolicLink() && 
-            fs.readlinkSync(from) === to) {
-            console.log(`Already exists link: ${from} -> ${fs.readlinkSync(from)}`);
-            return;
+        if (stats.isSymbolicLink()) {
+            if (fs.readlinkSync(from) === to) {
+                console.log(`Already exists link: ${from} -> ${fs.readlinkSync(from)}`);
+                return;
+            }
+            fs.unlink(from);
+        } else {
+            execSync(`rm -r ${from}`);
+            // fs.renameSync(from, `${from}~`);
         }
-        fs.renameSync(from, `${from}_org`);
     } catch (err) {
         // File not esists.
     }
@@ -44,25 +48,59 @@ function makeSymbolickLink(to, from) {
     console.log(`Make link: ${from} -> ${fs.readlinkSync(from)}`);
 }
 
-const ExtBlockPath = path.resolve(__dirname, '../src/block');
-const ExtEntryPath = path.resolve(__dirname, '../src/entry');
-const EntryFile = path.resolve(ExtEntryPath, './index.jsx');
-const BlockFile = path.resolve(ExtBlockPath, './index.js');
-
-const GuiRoot = args['gui'] ?
-    path.resolve(process.cwd(), args['gui']) :
-    path.resolve(__dirname, '../../scratch-gui');
-const VmRoot = args['vm'] ?
-    path.resolve(process.cwd(), args['vm']) :
-    path.resolve(__dirname, '../../scratch-vm');
+// Copy directory after delete old one.
+function copyDir(from, to) {
+    try {
+        const stats = fs.lstatSync(to);
+        if (stats.isSymbolicLink()) {
+            fs.unlinkSync(to);
+        } else {
+            execSync(`rm -r ${to}`);
+            // fs.renameSync(to, `${to}~`);
+        }
+    } catch (err) {
+        // File not esists.
+    }
+    execSync(`mkdir -p ${to} && cp -r ${from}/* ${to}`);
+    console.log(`copy dir ${from} -> ${to}`);
+}
 
 const ExtId = 'microbitMore';
 const ExtDirName = 'microbitMore';
+
+const VmRoot = args['vm'] ?
+    path.resolve(process.cwd(), args['vm']) :
+    path.resolve(__dirname, '../../scratch-vm');
+const GuiRoot = args['gui'] ?
+    path.resolve(process.cwd(), args['gui']) :
+    path.resolve(__dirname, '../../scratch-gui');
+
+const ExtBlockPath = path.resolve(__dirname, '../src/block');
+const ExtEntryPath = path.resolve(__dirname, '../src/entry');
+
+const VmExtDirPath = path.resolve(VmRoot, `src/extensions/${ExtDirName}`);
+const GuiExtDirPath = path.resolve(GuiRoot, `src/lib/libraries/extensions/${ExtDirName}`);
+
+const EntryFile = path.resolve(GuiExtDirPath, './index.jsx');
+const BlockFile = path.resolve(VmExtDirPath, './index.js');
+
 const VmExtManagerFile = path.resolve(VmRoot, './src/extension-support/extension-manager.js');
 const VmVirtualMachineFile = path.resolve(VmRoot, './src/virtual-machine.js');
 const GuiExtIndexFile = path.resolve(GuiRoot, './src/lib/libraries/extensions/index.jsx');
 
 let stdout;
+
+if (args['link']) {
+    // Make symbolic link in scratch-vm. 
+    makeSymbolickLink(ExtBlockPath, VmExtDirPath);
+    // Make symbolic link in scratch-gui. 
+    makeSymbolickLink(ExtEntryPath, GuiExtDirPath);
+} else {
+    // Copy block dir to scratch-vm. 
+    copyDir(ExtBlockPath, VmExtDirPath);
+    // Copy entry dir in scratch-gui. 
+    copyDir(ExtEntryPath, GuiExtDirPath);
+}
 
 // Replace URL in entry and block code.
 if (args['url']) {
@@ -79,12 +117,6 @@ if (args['url']) {
     fs.writeFileSync(BlockFile, blockCode);
     console.log(`Block: extensionURL = ${url}`);
 }
-
-// Make symbolic link in scratch-vm. 
-makeSymbolickLink(
-    ExtBlockPath,
-    path.resolve(VmRoot, `./src/extensions/${ExtDirName}`)
-)
 
 // Add the extension to extension manager of scratch-vm. 
 let managerCode = fs.readFileSync(VmExtManagerFile, 'utf-8');
@@ -109,12 +141,6 @@ if (args['C']) {
         console.log(`Add as a core extension: ${ExtId}`);
     }
 }
-
-// Make symbolic link in scratch-gui. 
-makeSymbolickLink(
-    ExtEntryPath,
-    path.resolve(GuiRoot, `./src/lib/libraries/extensions/${ExtId}`)
-)
 
 // Add the extension to list of scratch-gui. 
 let indexCode = fs.readFileSync(GuiExtIndexFile, 'utf-8');
