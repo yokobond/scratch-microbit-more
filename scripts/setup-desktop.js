@@ -3,13 +3,12 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 
 const ExtRoot = path.resolve(__dirname, '../');
-const GuiRoot = path.resolve(__dirname, '../../scratch-gui');
 const DesktopRoot = path.resolve(__dirname, '../../scratch-desktop');
 
-const ScratchDesktopIcnsFile = path.join('buildResources', 'ScratchDesktop.icns');
-const ScratchDesktopIcoFile = path.join('buildResources', 'ScratchDesktop.ico');
-const ScratchDesktopSvgFile = path.join('src', 'icon', 'ScratchDesktop.svg');
-const ProvisionProfile = path.join('embedded.provisionprofile');
+const IcnsFilePath = path.join('buildResources', 'ScratchDesktop.icns');
+const IcoFilePath = path.join('buildResources', 'ScratchDesktop.ico');
+const SvgFilePath = path.join('src', 'icon', 'ScratchDesktop.svg');
+const ProvisionProfilePath = path.join('embedded.provisionprofile');
 
 let stdout;
 
@@ -18,13 +17,24 @@ stdout = execSync(`cd ${DesktopRoot} && npm install yokobond/scratch-gui#xcratch
 console.log(`stdout: ${stdout.toString()}`);
 
 // Change logo image of scratch-desktop
-fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopIcnsFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopIcnsFile)));
-fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopIcoFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopIcoFile)));
-fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ScratchDesktopSvgFile)), path.resolve(path.join(DesktopRoot, ScratchDesktopSvgFile)));
+fs.copyFileSync(
+    path.join(ExtRoot, 'scratch-desktop', IcnsFilePath),
+    path.join(DesktopRoot, IcnsFilePath)
+);
+fs.copyFileSync(
+    path.join(ExtRoot, 'scratch-desktop', IcoFilePath),
+    path.join(DesktopRoot, IcoFilePath)
+);
+fs.copyFileSync(
+    path.join(ExtRoot, 'scratch-desktop', SvgFilePath),
+    path.join(DesktopRoot, SvgFilePath)
+);
 
 // Set provision profile for Mac app
 if (process.platform === 'darwin') {
-    fs.copyFileSync(path.resolve(path.join(ExtRoot, 'scratch-desktop', ProvisionProfile)), path.resolve(path.join(DesktopRoot, ProvisionProfile)));
+    fs.copyFileSync(
+        path.join(ExtRoot, 'scratch-desktop', ProvisionProfilePath),
+        path.join(DesktopRoot, ProvisionProfilePath));
 }
 
 // Apply patch to scratch-desktop
@@ -33,5 +43,4 @@ try {
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
     console.log('Already applyed: scratch-desktop.patch');
-    // console.error(err);
 }
