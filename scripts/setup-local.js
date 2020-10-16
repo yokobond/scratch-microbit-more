@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+// const { execSync } = require('child_process')
 
 const VmRoot = path.resolve(__dirname, '../../scratch-vm');
 const GuiRoot = path.resolve(__dirname, '../../scratch-gui');
@@ -8,12 +9,16 @@ const GuiRoot = path.resolve(__dirname, '../../scratch-gui');
 function makeSymbolickLink(to, from) {
     try {
         const stats = fs.lstatSync(from);
-        if (stats.isSymbolicLink() && 
-            fs.readlinkSync(from) === to) {
-            console.log(`Already exists link: ${from} -> ${fs.readlinkSync(from)}`);
-            return;
+        if (stats.isSymbolicLink()) {
+            if (fs.readlinkSync(from) === to) {
+                console.log(`Already exists link: ${from} -> ${fs.readlinkSync(from)}`);
+                return;
+            }
+            fs.unlink(from);
+        } else {
+            // execSync(`rm -r ${from}`);
+            fs.renameSync(from, `${from}~`);
         }
-        fs.renameSync(from, `${from}_org`);
     } catch (err) {
         // File not esists.
     }
