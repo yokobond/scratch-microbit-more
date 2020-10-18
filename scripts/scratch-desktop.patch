@@ -1,5 +1,5 @@
 diff --git a/electron-builder.yaml b/electron-builder.yaml
-index fc32724..2d04554 100644
+index e52e662..44ff2b6 100644
 --- a/electron-builder.yaml
 +++ b/electron-builder.yaml
 @@ -1,8 +1,8 @@
@@ -7,45 +7,74 @@ index fc32724..2d04554 100644
    buildResources: buildResources
    output: dist
 -appId: edu.mit.scratch.scratch-desktop
--productName: "Scratch Desktop"
+-productName: "Scratch 3"
 +appId: com.yengawa.mbitmore
-+productName: "Microbit More Desktop"
++productName: "MicrobitMore Desktop"
  publish: # empty provider list = don't publish
  mac:
    category: public.app-category.education
-@@ -33,9 +33,10 @@ win:
+@@ -16,12 +16,12 @@ mac:
+   hardenedRuntime: true
+   icon: buildResources/ScratchDesktop.icns
+   provisioningProfile: embedded.provisionprofile
+-  artifactName: "Scratch ${version}.${ext}"
++  artifactName: "MicrobitMore Desktop ${version}.${ext}"
    target:
+     - dmg
+     - mas
+ dmg:
+-  title: "Scratch ${version}"
++  title: "MicrobitMore Desktop ${version}"
+ mas:
+   category: public.app-category.education
+   entitlements: buildResources/entitlements.mas.plist
+@@ -37,10 +37,10 @@ win:
      - appx
      - nsis
-+  publisherName: "Yengawa Lab"
  appx:
 -  identityName: ScratchFoundation.ScratchDesktop
 -  publisherDisplayName: "Scratch Foundation"
 -  publisher: "CN=2EC43DF1-469A-4119-9AB9-568A0A1FF65F"
+-  artifactName: "Scratch ${version}.${ext}"
 +  identityName: YengawaLab.MicrobitMoreDesktop
-+  publisherDisplayName: "Yengawa Lab"
++  publisherDisplayName: "YengawaLab"
 +  publisher: "CN=YENGAWA-LAB"
++  artifactName: "MicrobitMore Desktop ${version}.${ext}"
  nsis:
    oneClick: false # allow user to choose per-user or per-machine
+-  artifactName: "Scratch ${version} Setup.${ext}"
++  artifactName: "MicrobitMore Desktop ${version} Setup.${ext}"
 diff --git a/package.json b/package.json
-index 7c167d7..cc09c46 100644
+index 883dc5f..37cc6f8 100644
 --- a/package.json
 +++ b/package.json
-@@ -1,9 +1,9 @@
+@@ -1,20 +1,20 @@
  {
 -  "name": "scratch-desktop",
--  "productName": "Scratch Desktop",
+-  "productName": "Scratch",
 -  "description": "Scratch 3.0 as a self-contained desktop application",
 -  "author": "Scratch Foundation",
--  "version": "3.14.0",
 +  "name": "microbit-more-desktop",
-+  "productName": "Microbit More Desktop",
-+  "description": "Scratch 3.0 desktop application with Microbit-More extension",
++  "productName": "MicrobitMore Desktop",
++  "description": "Scratch 3.0 as a self-contained desktop application with Microbit-More extension",
 +  "author": "Koji Yokokawa",
-+  "version": "0.4.3",
+   "version": "3.16.1",
    "license": "BSD-3-Clause",
    "scripts": {
-     "clean": "rimraf ./dist ./static/assets && node ./scripts/npm-in-gui.js run clean",
+     "clean": "rimraf ./dist ./static/assets",
+     "start": "mkdirp ./dist && electron-webpack dev --bail --display-error-details --env.minify=false --no-progress",
+-    "compile": "mkdirp ./dist && electron-webpack --bail --display-error-details --env.minify=false --no-progress",
++    "compile": "mkdirp ./dist && electron-webpack --bail --display-error-details --env.minify=false --no-progress --max_old_space_size=4098",
+     "fetch": "rimraf ./static/assets/ && mkdirp ./static/assets/ && node ./scripts/fetchMediaLibraryAssets.js",
+     "build": "npm run build:dev",
+     "build:dev": "npm run compile && npm run doBuild -- --mode=dev",
+     "build:dir": "npm run compile && npm run doBuild -- --mode=dir",
+     "build:dist": "npm run compile && npm run doBuild -- --mode=dist",
+-    "doBuild": "node ./scripts/electron-builder-wrapper.js",
++    "doBuild": "node --max_old_space_size=4098 ./scripts/electron-builder-wrapper.js",
+     "dist": "npm run clean && npm run compile && npm run fetch && npm run doBuild -- --mode=dist",
+     "distDev": "npm run clean && npm run compile && npm run fetch && npm run doBuild -- --mode=dev",
+     "test": "npm run test:lint",
 diff --git a/scripts/afterSign.js b/scripts/afterSign.js
 index fbe4fb0..326fe89 100644
 --- a/scripts/afterSign.js
@@ -59,25 +88,3 @@ index fbe4fb0..326fe89 100644
  
      if (!process.env.AC_USERNAME) {
          console.error([
-diff --git a/src/main/index.js b/src/main/index.js
-index fe98e1a..29b59b4 100644
---- a/src/main/index.js
-+++ b/src/main/index.js
-@@ -202,7 +202,7 @@ const createAboutWindow = () => {
-         height: 400,
-         parent: _windows.main,
-         search: 'route=about',
--        title: 'About Scratch Desktop'
-+        title: 'About Microbit More Desktop'
-     });
-     return window;
- };
-@@ -219,7 +219,7 @@ const createMainWindow = () => {
-     const window = createWindow({
-         width: defaultSize.width,
-         height: defaultSize.height,
--        title: 'Scratch Desktop'
-+        title: 'Microbit More Desktop'
-     });
-     const webContents = window.webContents;
- 
