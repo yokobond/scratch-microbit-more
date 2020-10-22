@@ -31,6 +31,7 @@ jobs:
       - run: cp ./scratch-microbit-more/site/index.html ./scratch-gui/build/index.html
       - run: cp ./scratch-microbit-more/site/favicon.ico ./scratch-gui/build/static/favicon.ico
       - run: cp -r ./scratch-microbit-more/dist ./scratch-gui/build/dist
+      - run: cp ./scratch-microbit-more/site/donation.html ./scratch-gui/build/donation.html
       - uses: peaceiris/actions-gh-pages@v3
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
