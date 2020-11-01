@@ -4,6 +4,7 @@ const { execSync } = require('child_process');
 
 const ExtRoot = path.resolve(__dirname, '../');
 const DesktopRoot = path.resolve(__dirname, '../../scratch-desktop');
+const VmRoot = path.resolve(DesktopRoot, 'node_modules/scratch-vm');
 
 const IcnsFilePath = path.join('buildResources', 'ScratchDesktop.icns');
 const IcoFilePath = path.join('buildResources', 'ScratchDesktop.ico');
@@ -17,7 +18,7 @@ try {
     stdout = execSync(`cd ${DesktopRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'scratch-desktop.patch')}`);
     console.log(`stdout: ${stdout.toString()}`);
 } catch (err) {
-    console.log('Already applyed: scratch-desktop.patch');
+    console.log('fail to apply: scratch-desktop.patch');
 }
 
 // Install base GUI
@@ -56,11 +57,17 @@ console.log(`stdout: ${stdout.toString()}`);
 // )
 
 // // Change WebBLE for Electron
-// const VmRoot = path.resolve(DesktopRoot, 'node_modules/scratch-vm');
 // fs.copyFileSync(
 //     path.join(VmRoot, 'src', 'io', 'ble-web-electron.js'),
 //     path.join(VmRoot, 'src', 'io', 'ble-web.js')
 // );
+
+// Apply patch to scratch-vm
+try {
+    stdout = execSync(`cd ${VmRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'scratch-vm-desktop.patch')}`);
+} catch (err) {
+    console.log('fail to apply: scratch-vm-desktop.patch');
+}
 
 // Change logo image of scratch-desktop
 fs.copyFileSync(
