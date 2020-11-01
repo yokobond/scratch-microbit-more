@@ -750,13 +750,15 @@ class MbitMore {
     scan () {
         if (this._ble) {
             this._ble.disconnect();
+            this._ble.requestPeripheral();
+        } else {
+            this._ble = new BLE(this._runtime, this._extensionId, {
+                filters: [
+                    {services: [MICROBIT_SERVICE.ID]}
+                ],
+                optionalServices: [MBITMORE_SERVICE.ID]
+            }, this._onConnect, this.reset);
         }
-        this._ble = new BLE(this._runtime, this._extensionId, {
-            filters: [
-                {services: [MICROBIT_SERVICE.ID]}
-            ],
-            optionalServices: [MBITMORE_SERVICE.ID]
-        }, this._onConnect, this.reset);
     }
 
     /**
