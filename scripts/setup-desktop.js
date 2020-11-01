@@ -12,9 +12,55 @@ const ProvisionProfilePath = path.join('embedded.provisionprofile');
 
 let stdout;
 
+// Apply patch to scratch-desktop
+try {
+    stdout = execSync(`cd ${DesktopRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'scratch-desktop.patch')}`);
+    console.log(`stdout: ${stdout.toString()}`);
+} catch (err) {
+    console.log('Already applyed: scratch-desktop.patch');
+}
+
 // Install base GUI
 stdout = execSync(`cd ${DesktopRoot} && npm install yokobond/scratch-gui#xcratch-desktop`);
 console.log(`stdout: ${stdout.toString()}`);
+
+// Update electron-builder to avoid fail of electron-builder v22.6.0 in Mac.
+stdout = execSync(`cd ${DesktopRoot} && npm update electron-builder`);
+console.log(`stdout: ${stdout.toString()}`);
+
+// // Use local scratch-vm in scratch-desktop
+// // Only for development of scratch-vm
+// // Make symbolic link
+// function makeSymbolickLink(to, from) {
+//     try {
+//         const stats = fs.lstatSync(from);
+//         if (stats.isSymbolicLink()) {
+//             if (fs.readlinkSync(from) === to) {
+//                 console.log(`Already exists link: ${from} -> ${fs.readlinkSync(from)}`);
+//                 return;
+//             }
+//             fs.unlink(from);
+//         } else {
+//             // execSync(`rm -r ${from}`);
+//             fs.renameSync(from, `${from}~`);
+//         }
+//     } catch (err) {
+//         // File not esists.
+//     }
+//     fs.symlinkSync(to, from);
+//     console.log(`Make link: ${from} -> ${fs.readlinkSync(from)}`);
+// }
+// makeSymbolickLink(
+//     path.resolve(__dirname, '../../scratch-vm'),
+//     path.resolve(DesktopRoot, './node_modules/scratch-vm')
+// )
+
+// // Change WebBLE for Electron
+// const VmRoot = path.resolve(DesktopRoot, 'node_modules/scratch-vm');
+// fs.copyFileSync(
+//     path.join(VmRoot, 'src', 'io', 'ble-web-electron.js'),
+//     path.join(VmRoot, 'src', 'io', 'ble-web.js')
+// );
 
 // Change logo image of scratch-desktop
 fs.copyFileSync(
@@ -35,12 +81,4 @@ if (process.platform === 'darwin') {
     fs.copyFileSync(
         path.join(ExtRoot, 'scratch-desktop', ProvisionProfilePath),
         path.join(DesktopRoot, ProvisionProfilePath));
-}
-
-// Apply patch to scratch-desktop
-try {
-    stdout = execSync(`cd ${DesktopRoot} && patch -p1 -N -s --no-backup-if-mismatch < ${path.join(ExtRoot, 'scripts', 'scratch-desktop.patch')}`);
-    console.log(`stdout: ${stdout.toString()}`);
-} catch (err) {
-    console.log('Already applyed: scratch-desktop.patch');
 }
