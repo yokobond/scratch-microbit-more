@@ -2,21 +2,21 @@ const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process')
 
-function getArgs () {
+function getArgs() {
     const args = {};
     process.argv
         .slice(2, process.argv.length)
-        .forEach( arg => {
-            if (arg.slice(0,2) === '--') {
+        .forEach(arg => {
+            if (arg.slice(0, 2) === '--') {
                 // long arg
                 const longArg = arg.split('=');
-                const longArgFlag = longArg[0].slice(2,longArg[0].length);
+                const longArgFlag = longArg[0].slice(2, longArg[0].length);
                 const longArgValue = longArg.length > 1 ? longArg[1] : true;
                 args[longArgFlag] = longArgValue;
             }
             else if (arg[0] === '-') {
                 // flags
-                const flags = arg.slice(1,arg.length).split('');
+                const flags = arg.slice(1, arg.length).split('');
                 flags.forEach(flag => {
                     args[flag] = true;
                 });
@@ -38,8 +38,12 @@ function makeSymbolickLink(to, from) {
             }
             fs.unlink(from);
         } else {
-            execSync(`rm -r ${from}`);
-            // fs.renameSync(from, `${from}~`);
+            if (process.platform === 'win32') {
+                execSync(`rd /s /q ${from}`);
+            } else {
+                execSync(`rm -r ${from}`);
+                // fs.renameSync(from, `${from}~`);
+            }
         }
     } catch (err) {
         // File not esists.
@@ -55,13 +59,22 @@ function copyDir(from, to) {
         if (stats.isSymbolicLink()) {
             fs.unlinkSync(to);
         } else {
-            execSync(`rm -r ${to}`);
-            // fs.renameSync(to, `${to}~`);
+            if (process.platform === 'win32') {
+                execSync(`rd /s /q ${to}`);
+            } else {
+                execSync(`rm -r ${to}`);
+                // fs.renameSync(to, `${to}~`);
+            }
         }
     } catch (err) {
         // File not esists.
     }
-    execSync(`mkdir -p ${to} && cp -r ${from}/* ${to}`);
+    if (process.platform === 'win32') {
+        execSync(`xcopy ${from} ${to} /I /Y`);
+    } else {
+        execSync(`mkdir -p ${to} && cp -r ${path.join(from, '*')} ${to}`);
+    }
+
     console.log(`copy dir ${from} -> ${to}`);
 }
 
