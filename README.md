@@ -98,8 +98,6 @@ Contributions, issues and feature requests are welcome!<br />Feel free to check 
 
 Give a ⭐️ if this project helped you!
 
-[Donate](https://yokobond.github.io/scratch-microbit-more/donation.html) if this project is worth for you.
-
 
 ## 📝 License
 
