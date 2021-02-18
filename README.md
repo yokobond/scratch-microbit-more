@@ -1,3 +1,5 @@
+**This project moved to a new repository [yokobond/mbit-more-v2](https://github.com/yokobond/mbit-more-v2).**
+
 <h1 align="center">scratch-microbit-more</h1>
 <p>
   <img alt="Version" src="https://img.shields.io/badge/version-0.5.0-blue.svg?cacheSeconds=2592000" />
