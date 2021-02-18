@@ -44,37 +44,6 @@ index e52e662..44ff2b6 100644
    oneClick: false # allow user to choose per-user or per-machine
 -  artifactName: "Scratch ${version} Setup.${ext}"
 +  artifactName: "MicrobitMore Desktop ${version} Setup.${ext}"
-diff --git a/package.json b/package.json
-index 883dc5f..37cc6f8 100644
---- a/package.json
-+++ b/package.json
-@@ -1,20 +1,20 @@
- {
--  "name": "scratch-desktop",
--  "productName": "Scratch",
--  "description": "Scratch 3.0 as a self-contained desktop application",
--  "author": "Scratch Foundation",
-+  "name": "microbit-more-desktop",
-+  "productName": "MicrobitMore Desktop",
-+  "description": "Scratch 3.0 as a self-contained desktop application with Microbit-More extension",
-+  "author": "Koji Yokokawa",
-   "version": "3.16.1",
-   "license": "BSD-3-Clause",
-   "scripts": {
-     "clean": "rimraf ./dist ./static/assets",
-     "start": "mkdirp ./dist && electron-webpack dev --bail --display-error-details --env.minify=false --no-progress",
--    "compile": "mkdirp ./dist && electron-webpack --bail --display-error-details --env.minify=false --no-progress",
-+    "compile": "mkdirp ./dist && electron-webpack --bail --display-error-details --env.minify=false --no-progress --max_old_space_size=4098",
-     "fetch": "rimraf ./static/assets/ && mkdirp ./static/assets/ && node ./scripts/fetchMediaLibraryAssets.js",
-     "build": "npm run build:dev",
-     "build:dev": "npm run compile && npm run doBuild -- --mode=dev",
-     "build:dir": "npm run compile && npm run doBuild -- --mode=dir",
-     "build:dist": "npm run compile && npm run doBuild -- --mode=dist",
--    "doBuild": "node ./scripts/electron-builder-wrapper.js",
-+    "doBuild": "node --max_old_space_size=4098 ./scripts/electron-builder-wrapper.js",
-     "dist": "npm run clean && npm run compile && npm run fetch && npm run doBuild -- --mode=dist",
-     "distDev": "npm run clean && npm run compile && npm run fetch && npm run doBuild -- --mode=dev",
-     "test": "npm run test:lint",
 diff --git a/scripts/afterSign.js b/scripts/afterSign.js
 index fbe4fb0..326fe89 100644
 --- a/scripts/afterSign.js
@@ -88,3 +57,43 @@ index fbe4fb0..326fe89 100644
  
      if (!process.env.AC_USERNAME) {
          console.error([
+diff --git a/src/main/index.js b/src/main/index.js
+index 1688313..c3ff6a4 100644
+--- a/src/main/index.js
++++ b/src/main/index.js
+@@ -43,6 +43,7 @@ const _windows = {};
+ // enable connecting to Scratch Link even if we DNS / Internet access is not available
+ // this must happen BEFORE the app ready event!
+ app.commandLine.appendSwitch('host-resolver-rules', 'MAP device-manager.scratch.mit.edu 127.0.0.1');
++app.commandLine.appendSwitch('enable-experimental-web-platform-features');
+ 
+ const displayPermissionDeniedWarning = (browserWindow, permissionType) => {
+     let title;
+@@ -309,6 +310,27 @@ const createMainWindow = () => {
+         window.show();
+     });
+ 
++    // receive found devices from navigator.bluetooth.requestDevice()
++    webContents.on('select-bluetooth-device', (event, deviceList, callback) => {
++        event.preventDefault();
++        if (window.bluetoothDeviceIdToConnect) {
++            callback(window.bluetoothDeviceIdToConnect);
++            window.bluetoothDeviceIdToConnect = null;
++            return;
++        }
++        webContents.send('discovered-bluetooth-devices', JSON.stringify(deviceList));
++    });
++
++    // receive device to connect from renderer
++    ipcMain.on('connect-bluetooth-device', (_event, deviceId) => {
++        window.bluetoothDeviceIdToConnect = deviceId;
++    });
++
++    // receive device to connect from renderer
++    ipcMain.on('cancel-select-bluetooth-device', () => {
++        window.bluetoothDeviceIdToConnect = ''; // Cancel to requestDevice() reffered by document of Electron.
++    });
++
+     return window;
+ };
+ 
